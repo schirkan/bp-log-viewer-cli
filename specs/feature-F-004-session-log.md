@@ -22,17 +22,20 @@ Ursachenforschung. **Output kann groß sein** — daher zwingend mit F-012
 ## Funktionale Anforderungen
 
 1. Befehl: `bp-log-viewer session log <session-number>`.
-2. Tabellenwahl zur **Laufzeit** ermitteln:
-   - `SELECT COUNT(*) FROM BPASessionLog_NonUnicode` → wenn > 0, NonUnicode als Quelle.
-   - sonst `BPASessionLog_Unicode`.
-   - Beide leer → leere Antwort + Warning `no_log_entries: <session-number>` + Exit 0.
+2. Tabellenwahl zur **Laufzeit** ermitteln (4-stufige Prioritätskette, **erste** befüllte Tabelle gewinnt):
+   1. `SELECT COUNT(*) FROM BPASessionLog_NonUnicode` → wenn > 0, Quelle = `BPASessionLog_NonUnicode`.
+   2. sonst `BPASessionLog_Unicode` → wenn > 0, Quelle = `BPASessionLog_Unicode`.
+   3. sonst `BPASessionLog_NonUnicode_pre65` → wenn > 0, Quelle = `BPASessionLog_NonUnicode_pre65` (Legacy pre-6.5).
+   4. sonst `BPASessionLog_Unicode_pre65` → wenn > 0, Quelle = `BPASessionLog_Unicode_pre65` (Legacy pre-6.5).
+   5. alle vier leer → leere Antwort + Warning `no_log_entries: <session-number>` + Exit 0.
+   6. Ausgabe **jedes** Datensatzes enthält `source_table: <tablename>`, damit KI weiß, woher die Daten kommen (Unicode vs. NonUnicode, aktuell vs. pre-65 ist nicht immer aus den Werten ableitbar).
 3. Filter (alle optional):
    - `--level <info|warn|error|debug>` (Mapping auf `resulttype`, siehe Implementation Notes unten)
    - `--text <substring>` (`LIKE '%text%'` auf `result` — **Performance-Warning** per architecture § 7.2)
    - `--stage <name>` (`stagename = @stage`)
 4. Sortierung: `logid ASC` (chronologisch).
 5. Limit per `--max-rows <n>` (Default 1000; **Hard-Ceiling** wie F-002). Für vollständige Logs → `--output` empfehlen.
-6. jsonl-Felder (snake_case): `log_id, stage_name, stage_type, result_type, result_type_name, started_at, ended_at, duration_ms, result_preview, attribute_size_bytes`.
+6. jsonl-Felder (snake_case): `log_id, source_table, stage_name, stage_type, result_type, result_type_name, started_at, ended_at, duration_ms, result_preview, attribute_size_bytes`.
 7. `result` wird auf 4000 Zeichen gekürzt (`result_preview`); Volltext per Flag `--full-result` (Achtung: Zeilen können MBs groß sein).
 8. `resulttype_name` wird aus dem **Runtime-Lookup** abgeleitet (siehe Implementation Notes).
 
@@ -55,8 +58,10 @@ Ursachenforschung. **Output kann groß sein** — daher zwingend mit F-012
 2. `--text "timeout"` findet alle Zeilen mit `timeout` in `result` + Warning `text_filter_perf_warning`.
 3. `result` mit 50 KB wird in `result_preview` auf 4000 Zeichen gekürzt; `--full-result` liefert vollständigen String.
 4. Bei > `MaxRows` ohne `--output` → die ersten `MaxRows` + Warning + Exit 2.
-5. Tabelle automatisch erkannt: bei 0 Zeilen in `NonUnicode` automatisch Fallback auf `Unicode`.
+5. Tabelle automatisch erkannt: bei 0 Zeilen in `NonUnicode` automatisch Fallback auf `Unicode` (oder pre-65-Variante — siehe Akzeptanzkriterium 7).
 6. `result_type_name` ist nicht `null` (Runtime-Lookup erfolgreich).
+7. Bei allen 4 Tabellen = 0 Zeilen → Warning `no_log_entries` + Exit 0.
+8. `source_table` in jedem Datensatz befüllt.
 
 ## Out of Scope
 
@@ -81,3 +86,4 @@ _(keine — Mapping-Lookup im Review entschieden)_
 |:------|:-------|:---------|
 | 2026-10-13 | 📋 Entwurf | Initial angelegt |
 | 2026-10-13 | 📋 Entwurf | NDJSON → jsonl; M3: resulttype → Name via Runtime-Lookup, nicht hartkodiert |
+| 2026-10-13 | 📋 Entwurf | **4-stufige Tabellen-Prioritätskette** (NonUnicode → Unicode → NonUnicode_pre65 → Unicode_pre65); `source_table`-Feld im Output für KI-Transparenz (Martin-Frage 2026-10-13) |

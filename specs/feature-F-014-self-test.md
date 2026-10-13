@@ -43,7 +43,7 @@ Zusätzlich: Binary-Version für Diagnose und CI/CD-Logging.
       - Bei beiden Quellen OK: `bp_version: <db_value>`, `bp_version_source: "db"`.
       - Nur Registry: `bp_version_source: "registry"`.
    5. **Tabellen-Check:** Existenz von `BPASession`, `BPASessionLog_NonUnicode`, `BPASessionLog_Unicode`, `BPAProcess`, `BPAResource`, `BPAWorkQueue`, `BPAAuditEvents`. Pro Tabelle `tables.<name>: ok | missing`.
-   6. **Aktive Log-Tabelle:** welche `BPASessionLog_*` ist befüllt → `active_log_table: NonUnicode | Unicode | none`.
+   6. **Aktive Log-Tabelle:** welche `BPASessionLog_*` ist befüllt (4-stufige Prioritätskette aus F-004) → `active_log_table: NonUnicode | Unicode | NonUnicode_pre65 | Unicode_pre65 | none`.
    7. **Write-Test:** Schreibtest gegen `<binary-dir>/temp/self-test-write-<timestamp>.json`. Bei Erfolg: `write_test: ok`, Datei wird sofort wieder gelöscht. Bei Fehler: `write_test: failed` + Reason.
 3. Ausgabe: ein jsonl-Objekt pro Schritt + ein abschließendes Summary-Objekt `{"self_test": "ok" | "degraded" | "failed", "duration_ms": <n>}`.
 4. Exit-Code:
@@ -59,7 +59,7 @@ Zusätzlich: Binary-Version für Diagnose und CI/CD-Logging.
 
 ## Akzeptanzkriterien
 
-1. `bp-log-viewer self-test` auf diesem System meldet alle Tabellen als `ok` und `active_log_table: NonUnicode`.
+1. `bp-log-viewer self-test` auf diesem System meldet alle Tabellen als `ok` und `active_log_table: NonUnicode` (8 Zeilen in der Tabelle).
 2. `bp_version: 7.5.1.18099` aus DB.
 3. `bp-log-viewer version` liefert gültiges jsonl mit `cli_version`, `build_commit`, `build_date`.
 4. Bei falscher `appsettings.json` (z. B. gelöscht) → Exit 3 und `config_status: error`.
@@ -98,3 +98,4 @@ _(keine — im Review gelöst: DB-Version-Vorrang, `version`-Sub-Command ergänz
 |:------|:-------|:---------|
 | 2026-10-13 | 📋 Entwurf | Initial angelegt |
 | 2026-10-13 | 📋 Entwurf | M7: Output-Pfad-Test repariert (Schritt 7 schreibt gegen `PathResolver.Root`); M8: `version`-Sub-Command ergänzt; m7: DB-Vorrang vor Registry bei BP-Version |
+| 2026-10-13 | 📋 Entwurf | Schritt 6 `active_log_table` auf 4-stufige Kette erweitert (Martin-Frage 2026-10-13) |
