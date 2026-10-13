@@ -1,0 +1,62 @@
+# Feature-Spec — Session Details
+
+> Liefert die vollständigen Metadaten einer einzelnen Session.
+
+## Identifikation
+
+- **ID:** F-003
+- **Titel:** Session Details
+- **Slug:** session-details
+- **Status:** 📋 Entwurf
+- **Priorität:** Hoch
+- **Zugewiesen:** —
+- **Erstellt am:** 2026-10-13
+- **Letzte Aktualisierung:** 2026-10-13
+
+## Ziel / Anwendungsfall
+
+Drill-Down von F-002 (Session List) auf eine konkrete Session. Liefert alle
+Felder, die für die Fehleranalyse relevant sind, inklusive Work-Queue-Verknüpfung
+und Exception-Details.
+
+## Funktionale Anforderungen
+
+1. Befehl: `bp-log-viewer session get <session-number>` (menschenlesbare ID; `--session-id <uuid>` als Alternative).
+2. Quelle: `BPASession` (alle Spalten) + Lookups (`BPAStatus`, `BPAExceptionType` falls vorhanden, `BPAProcess`, `BPAResource`, `BPAUser` falls referenziert).
+3. Verknüpfte Work-Queue-Items: `BPAWorkQueueItem` mit `sessionid = @sessionid` → `keyvalue`, `status`, `attempt`, `exceptionreason`, `exceptionreasontag`, `started`, `finished`.
+4. NDJSON-Ausgabe: **ein** Objekt mit verschachtelten Feldern (nicht eine Liste).
+5. Lokale Zeitstempel (Europe/Berlin) wie in F-002.
+6. `duration_sec` als `ended_at - started_at` in Sekunden (oder `null` wenn `ended_at IS NULL`).
+
+## Nicht-funktionale Anforderungen
+
+- Antwort < 100 ms.
+- `sessionstatexml` und `startparamsxml` werden **nicht** standardmäßig ausgegeben (zu groß). Per Flag `--include-state-xml` opt-in.
+- `compressedxml` aus `BPAProcess` wird niemals ausgegeben.
+
+## Akzeptanzkriterien
+
+1. `bp-log-viewer session get 4711` liefert genau ein NDJSON-Objekt.
+2. Existiert die Session nicht → Exit 0, leerer Stream + Warning auf stderr `session_not_found: 4711`.
+3. `--include-state-xml` fügt `start_params_xml` und `session_state_xml` als String-Felder hinzu (Größe-Hinweis in stderr).
+4. Verknüpfte Queue-Items erscheinen unter `work_queue_items: [...]` (auch wenn leer: `[]`).
+
+## Out of Scope
+
+- Verknüpfte Log-Zeilen — siehe F-004.
+- Verknüpfte Audit-Events — siehe F-010.
+
+## Abhängigkeiten
+
+- F-001, F-011, F-012, F-013.
+
+## Offene Fragen
+
+1. Soll bei aktiver Session (`ended_at IS NULL`) automatisch ein Hinweis im Output stehen, dass die Session noch läuft? (Vorschlag: ja, Feld `is_running: true`.)
+2. Wieviele verknüpfte Work-Queue-Items sollen ohne Limit zurückgegeben werden? (Vorschlag: 100 + `truncated: true` Flag.)
+
+## Verlauf
+
+| Datum | Status | Änderung |
+|:------|:-------|:---------|
+| 2026-10-13 | 📋 Entwurf | Initial angelegt |

@@ -1,0 +1,57 @@
+## .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+.vs/
+*.user
+*.suo
+*.userprefs
+*.swp
+*.swo
+project.lock.json
+project.fragment.lock.json
+artifacts/
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+
+## .NET CLI
+*.nupkg
+*.snupkg
+*.coverage
+*.coveragexml
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+## Publish
+publish/
+dist/
+
+## Secrets — must NOT be versioned
+appsettings.json
+appsettings.*.Production.json
+appsettings.*.Staging.json
+*.pfx
+*.p12
+*.key
+*.pem
+.env
+.env.*
+
+## Tools / Temp
+.idea/
+.vscode/
+temp/
+*.tmp
+*.bak
+*~
+.DS_Store
+Thumbs.db
+
+## OpenClaw / Workboard
+.workboard-claim-*.json
+
+## OS / PowerShell transcripts
+*.transcript
