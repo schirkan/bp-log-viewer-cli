@@ -25,48 +25,59 @@ Ursachenforschung. **Output kann groß sein** — daher zwingend mit F-012
 2. Tabellenwahl zur **Laufzeit** ermitteln:
    - `SELECT COUNT(*) FROM BPASessionLog_NonUnicode` → wenn > 0, NonUnicode als Quelle.
    - sonst `BPASessionLog_Unicode`.
-   - Beide leer → leere Antwort + Warning `no_log_entries: <session-number>`.
+   - Beide leer → leere Antwort + Warning `no_log_entries: <session-number>` + Exit 0.
 3. Filter (alle optional):
-   - `--level <info|warn|error|debug>` (Mapping auf `resulttype`: 0=Info, 1=Warn, 2=Error, 3=Debug)
-   - `--text <substring>` (`LIKE '%text%'` auf `result`)
+   - `--level <info|warn|error|debug>` (Mapping auf `resulttype`, siehe Implementation Notes unten)
+   - `--text <substring>` (`LIKE '%text%'` auf `result` — **Performance-Warning** per architecture § 7.2)
    - `--stage <name>` (`stagename = @stage`)
 4. Sortierung: `logid ASC` (chronologisch).
-5. Limit per `--max-rows <n>` (Default 1000; für vollständige Logs empfohlen `--output` zu nutzen).
-6. NDJSON-Felder (snake_case): `log_id, stage_name, stage_type, result_type, result_type_name, started_at, ended_at, duration_ms, result_preview, attribute_size_bytes`.
+5. Limit per `--max-rows <n>` (Default 1000; **Hard-Ceiling** wie F-002). Für vollständige Logs → `--output` empfehlen.
+6. jsonl-Felder (snake_case): `log_id, stage_name, stage_type, result_type, result_type_name, started_at, ended_at, duration_ms, result_preview, attribute_size_bytes`.
 7. `result` wird auf 4000 Zeichen gekürzt (`result_preview`); Volltext per Flag `--full-result` (Achtung: Zeilen können MBs groß sein).
+8. `resulttype_name` wird aus dem **Runtime-Lookup** abgeleitet (siehe Implementation Notes).
 
 ## Nicht-funktionale Anforderungen
 
 - Antwort < 1 s für 10.000 Zeilen.
-- Speicher-Streaming: nicht alle Zeilen in den Speicher laden — `Microsoft.Data.SqlClient.SqlDataReader` mit `CommandBehavior.SequentialAccess`.
-- Bei `--output` wird die `MaxRowsBeforeFile`-Schwelle aus F-012 ignoriert (explizit in Datei).
+- Speicher-Streaming: `Microsoft.Data.SqlClient.SqlDataReader` mit `CommandBehavior.SequentialAccess` (verhindert OOM bei großen `result`/`attributexml`).
+- Bei `--output` wird die `MaxRowsBeforeFile`-Schwelle ignoriert (explizit in Datei).
+- Parametrisierte Queries (CWE-89-Schutz).
+
+## Implementation Notes (zwingend)
+
+- **`resulttype` → Name Mapping** wird **nicht hartkodiert**. Beim Start 1× Mapping aus der BP-DB laden (z. B. aus `BPAStatus` falls dort geführt, oder eigene Tabelle `BPALogResultType` falls vorhanden) und gecacht für die Prozess-Dauer.
+- Falls BP-Version das Mapping ändert: **Daten-Update**, kein Code-Deploy.
+- Default-Mapping (für Self-Test bis Lookup greift): `0=Information, 1=Warning, 2=Error, 3=Debug, 4=Exception` — hartkodiert als **letzter Fallback**, mit Kommentar im Code, dass dies überschrieben werden soll.
 
 ## Akzeptanzkriterien
 
 1. `bp-log-viewer session log 4711 --level error` liefert nur `resulttype=2` (Error).
-2. `--text "timeout"` findet alle Zeilen mit `timeout` in `result`.
+2. `--text "timeout"` findet alle Zeilen mit `timeout` in `result` + Warning `text_filter_perf_warning`.
 3. `result` mit 50 KB wird in `result_preview` auf 4000 Zeichen gekürzt; `--full-result` liefert vollständigen String.
-4. Bei > `MaxRows` ohne `--output` → die ersten `MaxRows` + Warning + Exit 2 (wie F-002).
+4. Bei > `MaxRows` ohne `--output` → die ersten `MaxRows` + Warning + Exit 2.
 5. Tabelle automatisch erkannt: bei 0 Zeilen in `NonUnicode` automatisch Fallback auf `Unicode`.
+6. `result_type_name` ist nicht `null` (Runtime-Lookup erfolgreich).
 
 ## Out of Scope
 
-- Live-Tail (laufende Session beobachten) — Vorschlag für F-015+.
+- Live-Tail (laufende Session beobachten) — Vorschlag F-021.
 - Log-Rotation / Archivierung.
 - Parsen der `attributexml` (zu spezifisch, kann opt-in später kommen).
+- SQL Server Full-Text Search — v2 (`--text-fulltext`).
 
 ## Abhängigkeiten
 
 - F-001, F-011, F-012, F-013.
-- `resulttype`-Codes versionsabhängig — Mapping wird zur Laufzeit aus einer Lookup-View gelesen oder hartkodiert mit Konfigurations-Override (offene Frage).
+- architecture § 7.2 (LIKE-Performance, Streaming), § 7.3 (Pflicht-Query).
+- `dotnet-trimmed-binary-json-fix`-Skill für Streaming-Pfad.
 
 ## Offene Fragen
 
-1. Soll `--level debug` standardmäßig ignoriert werden (BP-Default loggt Debug nicht)? (Vorschlag: nein, Filter gilt für alle, auch wenn Tabelle leer.)
-2. Mapping `resulttype → name` als Hartcode oder Lookup-Tabelle? (Vorschlag: Hartcode mit dokumentiertem Default; spätere BP-Versionen können abweichen.)
+_(keine — Mapping-Lookup im Review entschieden)_
 
 ## Verlauf
 
 | Datum | Status | Änderung |
 |:------|:-------|:---------|
 | 2026-10-13 | 📋 Entwurf | Initial angelegt |
+| 2026-10-13 | 📋 Entwurf | NDJSON → jsonl; M3: resulttype → Name via Runtime-Lookup, nicht hartkodiert |

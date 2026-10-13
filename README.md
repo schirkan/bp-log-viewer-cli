@@ -8,6 +8,10 @@ official BP CLI.
 > [`specs/README.md`](specs/README.md). Implementation starts after Martin signs
 > off the specs.
 
+## License
+
+[MIT](LICENSE) — Copyright (c) 2026 Martin.
+
 ## What this is
 
 A single `.exe` (`.NET 8 self-contained single-file trimmed`, win-x64) that
@@ -47,14 +51,10 @@ See [`specs/architecture.md`](specs/architecture.md) for the full picture.
 | [`specs/feature-F-*.md`](specs/) | Feature specs (F-001 … F-014) |
 | [`context/blue-prism-installation.md`](context/blue-prism-installation.md) | Local Blue Prism installation findings |
 | [`context/blue-prism-database-schema.md`](context/blue-prism-database-schema.md) | DB schema findings (213 objects) |
+| [`appsettings.template.json`](appsettings.template.json) | Configuration template (copy to `appsettings.json`) |
 
 ## Project context
 
 This is a small, focused tool. Per Martin (project owner), the OpenClaw
 workboard is **deliberately not used** here; status and todo tracking run
 exclusively through `specs/README.md`.
-
-## License
-
-_(to be added — currently a personal project, license to be decided before any
-external distribution.)_
