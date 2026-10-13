@@ -27,7 +27,7 @@
 - DB- und Installations-Befunde dokumentiert in `context/`.
 - **code-review 2026-10-13 abgeschlossen** (Skill `code-review`, 2 CRITICAL + 8 MAJOR + 7 MINOR + 5 NIT). Alle CRITICAL + MAJOR-Blocker in derselben Session gefixt. MINOR-Items in `## Blocker → Implementation-Notes` überführt.
 - Lizenz: **MIT** (`LICENSE`, README-Badge).
-- **Nächste Phase wartet auf Martin-Abnahme der Specs** (Wechsel 📋 → 🗔 → ✅).
+- **Alle 14 Specs ✅ Freigegeben** (Martin-Abnahme 2026-10-13 21:47). Implementierung startet.
 - Git-Repo: **eingerichtet** (siehe `## Git`).
 - Workboard: **bewusst nicht verwendet** (siehe ⚠️ oben).
 
@@ -44,20 +44,20 @@
 
 | ID | Titel | Priorität | Status |
 |:---|:------|:----------|:-------|
-| F-001 | Database Connection Management | Hoch | 📋 |
-| F-002 | Session List | Hoch | 📋 |
-| F-003 | Session Details | Hoch | 📋 |
-| F-004 | Session Log | Hoch | 📋 |
-| F-005 | Search Errors | Hoch | 📋 |
-| F-006 | Resources | Mittel | 📋 |
-| F-007 | Processes | Mittel | 📋 |
-| F-008 | Work Queues | Mittel | 📋 |
-| F-009 | Work Queue Items | Mittel | 📋 |
-| F-010 | Audit Events | Niedrig | 📋 |
-| F-011 | Common Filters | Hoch | 📋 |
-| F-012 | Output to File | **Hoch** (Martin-Vorgabe) | 📋 |
-| F-013 | Output Format (jsonl / Table) | Hoch | 📋 |
-| F-014 | Self-Test & Diagnostics | Mittel | 📋 |
+| F-001 | Database Connection Management | Hoch | ✅ |
+| F-002 | Session List | Hoch | ✅ |
+| F-003 | Session Details | Hoch | ✅ |
+| F-004 | Session Log | Hoch | ✅ |
+| F-005 | Search Errors | Hoch | ✅ |
+| F-006 | Resources | Mittel | ✅ |
+| F-007 | Processes | Mittel | ✅ |
+| F-008 | Work Queues | Mittel | ✅ |
+| F-009 | Work Queue Items | Mittel | ✅ |
+| F-010 | Audit Events | Niedrig | ✅ |
+| F-011 | Common Filters | Hoch | ✅ |
+| F-012 | Output to File | **Hoch** (Martin-Vorgabe) | ✅ |
+| F-013 | Output Format (jsonl / Table) | Hoch | ✅ |
+| F-014 | Self-Test & Diagnostics | Mittel | ✅ |
 
 Vollständige Tabelle mit Abhängigkeiten: `specs/README.md` § Status-Übersicht.
 
@@ -79,9 +79,7 @@ Vollständige Tabelle mit Abhängigkeiten: `specs/README.md` § Status-Übersich
 
 ## Blocker
 
-| # | Blocker | Auswirkung |
-|---|:--------|:-----------|
-| 1 | **Spec-Review** durch Martin | Wechsel 📋 → 🗔 → ✅ nötig, bevor Implementierung startet |
+_(keine — alle Specs freigegeben, Implementierung freigegeben)_
 
 ## Implementation-Notes (aus code-review, nicht-blockierend)
 
@@ -142,4 +140,6 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-13 | **C2** `MaxRowsAbsoluteCeiling` (Default 100 000) + Exit 8 |
 | 2026-10-13 | **M1–M8** + **m1–m7** + **n1, n4** in architecture.md und allen 14 Specs nachgezogen (siehe specs/README.md § Verlauf für Detail) |
 | 2026-10-13 | `.gitattributes` + `appsettings.template.json` neu angelegt |
-| 2026-10-13 | **Blocker #2** (GitHub-Repo) + **#3** (`appsettings.template.json`) erledigt. Verbleibt: **#1** (Spec-Review). |
+| 2026-10-13 | **Blocker #2** (GitHub-Repo) + **#3** (`appsettings.template.json`) erledigt. |
+| 2026-10-13 | **Blocker #1** (Spec-Review) erledigt — Martin-Abnahme „Specs ok" 2026-10-13 21:47. Alle 14 Specs auf ✅ Freigegeben. |
+| 2026-10-13 | **Implementierung gestartet** — Fundament-Reihenfolge: F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010. |
