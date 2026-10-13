@@ -25,15 +25,15 @@
 - 14 Feature-Specs angelegt (F-001 bis F-014), alle im Status 📋 Entwurf.
 - DB- und Installations-Befunde dokumentiert in `context/`.
 - **Nächste Phase wartet auf Martin-Abnahme der Specs** (Wechsel 📋 → 🗔 → ✅).
-- Git-Repo: **in Einrichtung** (siehe `## Git`).
+- Git-Repo: **eingerichtet** (siehe `## Git`). Public: `https://github.com/schirkan/bp-log-viewer-cli`.
 - Workboard: **bewusst nicht verwendet** (siehe ⚠️ oben).
 
 ## Git
 
-- **Repo-Typ:** GitHub, öffentlich (in Einrichtung)
-- **Pfad / URL:** wird nach `gh repo create` gesetzt
-- **Remote(s):** `origin` (GitHub) — nach Create
-- **Eingerichtet am:** 2026-10-13 (lokal), GitHub folgt
+- **Repo-Typ:** GitHub, öffentlich
+- **Pfad / URL:** https://github.com/schirkan/bp-log-viewer-cli
+- **Remote(s):** `origin` → https://github.com/schirkan/bp-log-viewer-cli.git
+- **Eingerichtet am:** 2026-10-13 (lokal + GitHub-Remote)
 - **`.gitignore`-Status:** vorhanden (siehe Projekt-Root)
 - **Standard-Branch:** `main`
 
@@ -80,7 +80,7 @@ Vollständige Tabelle mit Abhängigkeiten: `specs/README.md` § Status-Übersich
 | # | Blocker | Auswirkung |
 |---|:--------|:-----------|
 | 1 | **Spec-Review** durch Martin | Wechsel 📋 → 🗔 → ✅ nötig, bevor Implementierung startet |
-| 2 | **GitHub-Repo-Erstellung** (PAT oder `gh`-Auth) | Lokales Repo initialisiert; `origin` und Push warten auf GitHub-Credentials |
+| 2 | ~~**GitHub-Repo-Erstellung**~~ | erledigt — siehe `## Git` |
 | 3 | **`appsettings.template.json`** Inhalt (DB-Connection-String-Form, Schwellwert) | Wird in Implementierungs-Phase festgelegt; Connection-String wird **nicht** versioniert |
 
 ## Offene Architektur-Entscheidungen
@@ -125,3 +125,4 @@ Detail-Begründungen in den jeweiligen Spec-Dateien.
 | 2026-10-13 | **No-Workboard-Entscheidung** in `AGENTS.md` prominent vermerkt (Martin-Vorgabe) |
 | 2026-10-13 | **NDJSON → jsonl** Umbenennung in architecture.md, F-012, F-013, specs/README.md, AGENTS.md (Martin-Vorgabe) |
 | 2026-10-13 | `.gitignore` angelegt, lokales Git-Repo initialisiert (Standard-Branch `main`) |
+| 2026-10-13 | **Initial Commit** auf `main` (24 Dateien, 1918 Zeilen) + **Public Repo** `https://github.com/schirkan/bp-log-viewer-cli` angelegt via `gh repo create --public --source=. --push` |
