@@ -233,7 +233,7 @@ Emoji).
 
 - Für **Listen** → Views (`BPVSessionInfo`, `BPVWorkQueueItem`).
 - Für **Details** → gezielt Tabellen + Lookups (`BPAStatus`, `BPAExceptionType`).
-- Für **Logs** → **4-stufige Prioritätskette** (siehe F-004 § Tabellenwahl): `BPASessionLog_NonUnicode` (bevorzugt) → `BPASessionLog_Unicode` → `BPASessionLog_NonUnicode_pre65` (Legacy) → `BPASessionLog_Unicode_pre65` (Legacy). Erste befüllte Tabelle gewinnt.
+- Für **Logs** → **2-stufige Kette** (siehe F-004 § Tabellenwahl): `BPASessionLog_NonUnicode` (bevorzugt) → `BPASessionLog_Unicode` (Fallback). Erste befüllte Tabelle gewinnt. pre-65-Tabellen (`*_pre65`) werden **nicht** abgefragt (Martin-Vorgabe 2026-10-13).
 - Niemals `SELECT *` — explizite Spaltenliste, damit JSON-Output stabil bleibt.
 - **Single-Query-LEFT-JOIN** für „aktuelle Session pro Resource" (F-006) und „letzte Session pro Prozess" (F-007): kein Loop mit Einzel-Queries, sondern ein LEFT JOIN auf aggregiertes Subquery. Implementation muss per `EXPLAIN` verifiziert werden.
 - **Volltext-Suche** (`--text`) verwendet `LIKE '%text%'` = Full Table Scan. Auf großen Tabellen (`BPASessionLog_NonUnicode` mit Millionen Zeilen) unbrauchbar. v1: harte Warning auf stderr (`text_filter_perf_warning: full table scan, consider v2 fulltext`). v2 (geplant): SQL Server Full-Text Search (`CONTAINS`) als Alternative hinter Flag `--text-fulltext`.
@@ -260,11 +260,11 @@ ORDER BY startdatetime DESC
 OFFSET 0 ROWS FETCH NEXT @max ROWS ONLY;
 
 -- session log (Streaming mit CommandBehavior.SequentialAccess für große result-Spalten)
--- Tabellenwahl via 4-stufige Prioritätskette (siehe F-004); im Code zur Laufzeit ermittelt
+-- Tabellenwahl via 2-stufiger Kette (siehe F-004); im Code zur Laufzeit ermittelt
 SELECT logid, stagename, stagetype, resulttype,
        startdatetime, enddatetime,
        LEFT(result, 4000) AS result_preview, attributesize
-FROM @SessionLogTable   -- eine von: BPASessionLog_NonUnicode, BPASessionLog_Unicode, BPASessionLog_NonUnicode_pre65, BPASessionLog_Unicode_pre65
+FROM @SessionLogTable   -- eine von: BPASessionLog_NonUnicode, BPASessionLog_Unicode
 WHERE sessionnumber = @sessionnumber
   AND (@level IS NULL OR resulttype = @level)
   AND (@text  IS NULL OR result LIKE '%' + @text + '%')   -- Performance: siehe § 7.2
@@ -325,4 +325,4 @@ Exit-Codes `1`–`11` sind reserviert. Sub-Commands dürfen keinen Code aus dies
 | 2026-10-13 | **n1** Beispiel-Datum in § 6.1 neutralisiert (`2025-06-15`) |
 | 2026-10-13 | **n4** `.gitattributes` für konsistente Line-Endings (silence „LF/CRLF"-Warnungen) |
 | 2026-10-13 | **Blocker #3** `appsettings.template.json` angelegt (versioniert) |
-| 2026-10-13 | **Session-Log: 4-stufige Tabellen-Prioritätskette** (architecture § 7.2 + F-004) — Martin-Frage 2026-10-13; pre-65-Legacy-Tabellen mit abgedeckt |
+| 2026-10-13 | **Session-Log: 2-stufige Tabellen-Prioritätskette** (architecture § 7.2 + F-004) — pre-65-Tabellen bewusst weggelassen (Martin-Vorgabe 2026-10-13) |
