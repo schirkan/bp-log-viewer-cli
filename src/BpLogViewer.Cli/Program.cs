@@ -1,4 +1,5 @@
 using BpLogViewer.Cli.Commands;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 
 namespace BpLogViewer.Cli;
@@ -27,18 +28,29 @@ public static class Program
                 return PrintRootHelp();
             }
 
-            return args[0] switch
+            // Split: globale Optionen (vor Sub-Command) | Sub-Command | Sub-Command-Args
+            var (subCommand, globalArgs, subArgs) = SplitArgs(args);
+
+            // Validiere alle globalen Optionen + Filter (F-011). Wirft FilterValidationException.
+            _ = FilterParser.Parse(globalArgs);
+
+            return subCommand switch
             {
+                "" or "help" or "--help" or "-h" => PrintRootHelp(),
                 "version" or "--version" or "-v" => VersionCommand.Execute(),
-                "help" or "--help" or "-h" => PrintRootHelp(),
                 "self-test" => NotYetImplemented("self-test", "F-014"),
-                "session" => DispatchSession(args[1..]),
-                "resource" => DispatchResource(args[1..]),
-                "process" => DispatchProcess(args[1..]),
-                "queue" => DispatchQueue(args[1..]),
-                "audit" => DispatchAudit(args[1..]),
-                _ => UnknownCommand(args[0])
+                "session" => DispatchSession(subArgs),
+                "resource" => DispatchResource(subArgs),
+                "process" => DispatchProcess(subArgs),
+                "queue" => DispatchQueue(subArgs),
+                "audit" => DispatchAudit(subArgs),
+                _ => UnknownCommand(subCommand)
             };
+        }
+        catch (FilterValidationException ex)
+        {
+            ErrorWriter.WriteErrorAsync(ex.Code, ex.Message, ex.ExitCode).GetAwaiter().GetResult();
+            return ex.ExitCode;
         }
         catch (Exception ex)
         {
@@ -47,11 +59,28 @@ public static class Program
         }
     }
 
+    /// <summary>
+    /// Trennt <paramref name="args"/> in (Sub-Command-Name, globale Args, Sub-Command-Args).
+    /// Das erste Argument, das nicht mit <c>--</c> oder <c>-</c> beginnt, ist der Sub-Command.
+    /// </summary>
+    private static (string subCommand, string[] globalArgs, string[] subArgs) SplitArgs(string[] args)
+    {
+        for (int i = 0; i < args.Length; i++)
+        {
+            if (!args[i].StartsWith("--") && !args[i].StartsWith("-"))
+            {
+                return (args[i], args[..i], args[(i + 1)..]);
+            }
+        }
+        // Kein Sub-Command — alle Args sind global
+        return ("", args, Array.Empty<string>());
+    }
+
     private static int PrintRootHelp()
     {
         Console.Error.WriteLine("bp-log-viewer — Structured, AI-friendly log access to Blue Prism 7.5.x database");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Usage: bp-log-viewer <command> [options]");
+        Console.Error.WriteLine("Usage: bp-log-viewer [global-options] <command> [command-options]");
         Console.Error.WriteLine("");
         Console.Error.WriteLine("Commands:");
         Console.Error.WriteLine("  version           Show CLI version and build information (jsonl)");
@@ -62,13 +91,13 @@ public static class Program
         Console.Error.WriteLine("  queue ...         Work queues (F-008) + items (F-009)");
         Console.Error.WriteLine("  audit list        Audit events (F-010)");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Global options (architecture § 5):");
+        Console.Error.WriteLine("Global options (F-011 + architecture § 5):");
         Console.Error.WriteLine("  --connection-string <cs>  --output <path>  --format jsonl|table");
         Console.Error.WriteLine("  --max-rows <n>  --since <iso>  --until <iso>");
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: alle 14 Specs ✅ Freigegeben. Implementation in Arbeit (F-013 Fundament).");
+        Console.Error.WriteLine("Status: alle 14 Specs ✅ Freigegeben. Implementation in Arbeit (F-013 Fundament ✅, F-011 Common Filters ✅).");
         return 0;
     }
 
@@ -85,7 +114,7 @@ public static class Program
     private static int UnknownCommand(string command)
     {
         ErrorWriter.WriteErrorAsync("unknown_command", $"Unbekannter Command: '{command}'. 'bp-log-viewer' ohne Argumente zeigt die Hilfe.", 11).GetAwaiter().GetResult();
-        return 11; // filter_invalid / unknown_command
+        return 11;
     }
 
     private static int DispatchSession(string[] _) => NotYetImplemented("session", "F-002..F-005");
