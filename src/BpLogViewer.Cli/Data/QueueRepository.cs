@@ -23,8 +23,9 @@ public sealed class QueueRepository
         var rows = new List<QueueInfo>(maxRowsPlusOne);
         while (reader.Read())
         {
-            DateTimeOffset? oldestPending = reader.IsDBNull(12) ? null : AssumeUtc(reader.GetDateTime(12));
-            var stale = oldestPending.HasValue && oldestPending.Value < DateTimeOffset.UtcNow.AddHours(-24);
+            DateTimeOffset? oldestPending = reader.IsDBNull(12) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(12));
+            // Stale-Schwellwert zentral in Configuration.QueueThresholds (Code-Review-Finding O6).
+            var stale = oldestPending.HasValue && oldestPending.Value < DateTimeOffset.UtcNow.AddHours(-Configuration.QueueThresholds.StalePendingThresholdHours);
 
             rows.Add(new QueueInfo(
                 QueueId: reader.GetGuid(0),
@@ -40,7 +41,7 @@ public sealed class QueueRepository
                 ItemCountException: reader.IsDBNull(10) ? 0 : reader.GetInt32(10),
                 ItemCountDeferred: reader.IsDBNull(11) ? 0 : reader.GetInt32(11),
                 OldestPendingLoadedAt: oldestPending,
-                NewestPendingLoadedAt: reader.IsDBNull(13) ? null : AssumeUtc(reader.GetDateTime(13)),
+                NewestPendingLoadedAt: reader.IsDBNull(13) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(13)),
                 Stale: stale));
         }
 
@@ -51,7 +52,8 @@ public sealed class QueueRepository
     {
         using var conn = _context.CreateConnection();
         conn.Open();
-        using var cmd = new SqlCommand("SELECT TOP 1 id FROM BPAWorkQueue WHERE name=@name", conn);
+        // ORDER BY name für deterministisches Ergebnis bei (theoretisch) mehreren Queues mit gleichem Namen.
+        using var cmd = new SqlCommand("SELECT TOP 1 id FROM BPAWorkQueue WHERE name=@name ORDER BY name", conn);
         cmd.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar, 255) { Value = queueName });
         var scalar = cmd.ExecuteScalar();
         return scalar is null or DBNull ? null : (Guid?)ConvertToGuid(scalar);
@@ -73,16 +75,16 @@ public sealed class QueueRepository
                 KeyValue: reader.IsDBNull(2) ? null : reader.GetString(2),
                 Status: reader.IsDBNull(3) ? null : reader.GetString(3),
                 Attempt: reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
-                LoadedAt: reader.IsDBNull(5) ? null : AssumeUtc(reader.GetDateTime(5)),
-                LockedAt: reader.IsDBNull(6) ? null : AssumeUtc(reader.GetDateTime(6)),
-                CompletedAt: reader.IsDBNull(7) ? null : AssumeUtc(reader.GetDateTime(7)),
-                ExceptionAt: reader.IsDBNull(8) ? null : AssumeUtc(reader.GetDateTime(8)),
+                LoadedAt: reader.IsDBNull(5) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(5)),
+                LockedAt: reader.IsDBNull(6) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(6)),
+                CompletedAt: reader.IsDBNull(7) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(7)),
+                ExceptionAt: reader.IsDBNull(8) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(8)),
                 ExceptionReason: reader.IsDBNull(9) ? null : reader.GetString(9),
                 ExceptionTag: reader.IsDBNull(10) ? null : reader.GetString(10),
                 Priority: reader.IsDBNull(11) ? null : (int?)reader.GetInt32(11),
                 WorkTimeSec: reader.IsDBNull(12) ? null : (int?)reader.GetInt32(12),
                 SessionId: reader.IsDBNull(13) ? null : (Guid?)reader.GetGuid(13),
-                LastUpdated: reader.IsDBNull(14) ? null : AssumeUtc(reader.GetDateTime(14)),
+                LastUpdated: reader.IsDBNull(14) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(14)),
                 DataPreview: reader.IsDBNull(15) ? null : reader.GetString(15),
                 Tags: null));
         }
@@ -236,8 +238,4 @@ public sealed class QueueRepository
         };
     }
 
-    private static DateTimeOffset AssumeUtc(DateTime dt)
-    {
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
-    }
 }

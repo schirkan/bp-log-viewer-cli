@@ -16,6 +16,12 @@ public static class PathResolver
             : Path.GetFullPath(Path.Combine(baseDir, configured));
     }
 
+    /// <summary>
+    /// Validiert einen <c>--output</c>-Pfad und gibt den absoluten Zielpfad zurück.
+    /// Bei relativen Pfaden wird der <c>BP_LOG_VIEWER_OUTPUT_ROOT</c>-ENV-Override als Anchor genutzt,
+    /// sonst <c>AppContext.BaseDirectory</c>. Pfade außerhalb des Anchors werden blockiert
+    /// (Traversal-Schutz, z. B. <c>../../etc/passwd</c>).
+    /// </summary>
     public static bool TryResolveOutputPath(string configured, out string absolutePath, out string? errorCode, out string? errorMessage)
     {
         absolutePath = string.Empty;
@@ -29,10 +35,13 @@ public static class PathResolver
             return false;
         }
 
+        // Windows-only: absolute Unix-Style-Pfade wie /etc/passwd ablehnen.
+        // Path.IsPathRooted ist plattformübergreifend korrekt (auf Linux ist "/" root,
+        // auf Windows erkennt es "/foo" als NICHT-rooted, was wir hier explizit verbieten wollen).
         if (OperatingSystem.IsWindows() && configured.StartsWith("/", StringComparison.Ordinal))
         {
             errorCode = "output_invalid_path";
-            errorMessage = $"unsupported absolute unix-style path: '{configured}'";
+            errorMessage = "unsupported absolute unix-style path";
             return false;
         }
 
@@ -49,24 +58,26 @@ public static class PathResolver
         else
         {
             absolutePath = Path.GetFullPath(Path.Combine(anchorRoot, configured));
+        }
 
-            var anchorWithSep = anchorRoot.EndsWith(Path.DirectorySeparatorChar)
-                ? anchorRoot
-                : anchorRoot + Path.DirectorySeparatorChar;
+        // Traversal-Schutz: Pfad darf nicht außerhalb des Anchors liegen
+        // (gilt auch für absolute Pfade, falls BP_LOG_VIEWER_OUTPUT_ROOT gesetzt).
+        var anchorWithSep = anchorRoot.EndsWith(Path.DirectorySeparatorChar)
+            ? anchorRoot
+            : anchorRoot + Path.DirectorySeparatorChar;
 
-            if (!absolutePath.StartsWith(anchorWithSep, StringComparison.OrdinalIgnoreCase) &&
-                !string.Equals(absolutePath, anchorRoot, StringComparison.OrdinalIgnoreCase))
-            {
-                errorCode = "output_path_outside_root";
-                errorMessage = $"resolved output path '{absolutePath}' is outside anchor '{anchorRoot}'";
-                return false;
-            }
+        if (!absolutePath.StartsWith(anchorWithSep, StringComparison.OrdinalIgnoreCase) &&
+            !string.Equals(absolutePath, anchorRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            errorCode = "output_path_outside_root";
+            errorMessage = "resolved output path is outside the configured root";
+            return false;
         }
 
         if (Directory.Exists(absolutePath))
         {
             errorCode = "output_is_directory";
-            errorMessage = $"output target is a directory: '{absolutePath}'";
+            errorMessage = "output target is a directory";
             return false;
         }
 

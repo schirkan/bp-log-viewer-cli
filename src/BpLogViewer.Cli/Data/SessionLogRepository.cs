@@ -49,8 +49,8 @@ public sealed class SessionLogRepository
             var stageName = reader.IsDBNull(1) ? null : reader.GetString(1);
             var stageType = reader.IsDBNull(2) ? null : (int?)reader.GetInt32(2);
             var rt = reader.IsDBNull(3) ? null : (int?)reader.GetInt32(3);
-            DateTimeOffset? startedAt = reader.IsDBNull(4) ? null : AssumeUtc(reader.GetDateTime(4));
-            DateTimeOffset? endedAt = reader.IsDBNull(5) ? null : AssumeUtc(reader.GetDateTime(5));
+            DateTimeOffset? startedAt = reader.IsDBNull(4) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(4));
+            DateTimeOffset? endedAt = reader.IsDBNull(5) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(5));
             var resultPreview = reader.IsDBNull(6) ? null : reader.GetString(6);
             var attributeSize = reader.IsDBNull(7) ? null : (long?)Convert.ToInt64(reader.GetValue(7), System.Globalization.CultureInfo.InvariantCulture);
 
@@ -120,11 +120,6 @@ public sealed class SessionLogRepository
         using var cmd = new SqlCommand($"SELECT COUNT_BIG(1) FROM {tableName};", conn);
         var value = cmd.ExecuteScalar();
         return value is null or DBNull ? 0 : Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    private static DateTimeOffset AssumeUtc(DateTime dt)
-    {
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
     }
 
     private static string? ResolveResultTypeName(int? resultType, IReadOnlyDictionary<int, string> map)

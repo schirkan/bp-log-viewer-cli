@@ -1,10 +1,14 @@
 using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Data;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
 
 namespace BpLogViewer.Cli.Commands;
 
+/// <summary>
+/// <c>bp-log-viewer queue items</c> (F-009).
+/// </summary>
 public static class QueueItemsCommand
 {
     public static int Execute(string[] args, FilterSet filters)
@@ -15,10 +19,8 @@ public static class QueueItemsCommand
             return 11;
         }
 
-        var settings = ConfigurationLoader.Load(cliConnectionString: filters.ConnectionString);
-        if (string.IsNullOrEmpty(settings.Database.ConnectionString))
+        if (!CommandHost.TryLoadSettings(filters, out var settings))
         {
-            ErrorWriter.WriteErrorAsync("config_invalid", "appsettings.json nicht gefunden oder Database.ConnectionString leer. Siehe self-test für Diagnose.", 3).GetAwaiter().GetResult();
             return 3;
         }
 
@@ -43,43 +45,25 @@ public static class QueueItemsCommand
                 }
             }
 
-            var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
-                ? FilterSet.MaxRowsAbsoluteCeiling
-                : filters.EffectiveMaxRows;
-
+            var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.ListItems(effectiveQueueId.Value, statuses, filters.Since, filters.Until, filters.Text, fullData, includeTags, effectiveMax + 1);
-            var truncated = rows.Count > effectiveMax;
-            if (truncated)
-            {
-                rows.RemoveAt(rows.Count - 1);
-                ErrorWriter.WriteWarningAsync("output_truncated", $"{effectiveMax} of {effectiveMax}+ rows. Use --output to write full result.").GetAwaiter().GetResult();
-            }
-
-            if (!string.IsNullOrWhiteSpace(filters.Output))
-            {
-                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.QueueItemInfo, filters.Output, out var code, out var msg))
-                {
-                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", msg ?? "failed to write output file", 6).GetAwaiter().GetResult();
-                    return 6;
-                }
-                return truncated ? 2 : 0;
-            }
-
-            foreach (var row in rows)
-            {
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(row, PayloadJsonContext.Default.QueueItemInfo));
-            }
-
-            return truncated ? 2 : 0;
+            var truncated = CommandHost.Truncate(rows, effectiveMax);
+            return CommandHost.Emit(rows, PayloadJsonContext.Default.QueueItemInfo, filters, truncated);
         }
         catch (Exception ex)
         {
-            ErrorWriter.WriteErrorAsync("db_error", ex.Message, 5).GetAwaiter().GetResult();
-            return 5;
+            return CommandHost.WriteDbError(ex);
         }
     }
 
-    private static bool ParseArgs(string[] args, out string? queueName, out Guid? queueId, out string[]? statuses, out bool includeTags, out bool fullData, out string? error)
+    private static bool ParseArgs(
+        string[] args,
+        out string? queueName,
+        out Guid? queueId,
+        out string[]? statuses,
+        out bool includeTags,
+        out bool fullData,
+        out string? error)
     {
         queueName = null;
         queueId = null;
@@ -89,11 +73,6 @@ public static class QueueItemsCommand
         error = null;
 
         var statusList = new List<string>();
-        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
-            "--max-rows", "--format", "--output", "--out-file", "--connection-string", "--queue-id"
-        };
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -112,19 +91,24 @@ public static class QueueItemsCommand
                 continue;
             }
 
-            if (token == "--status" && i + 1 < args.Length)
+            if (token == "--status")
             {
+                if (i + 1 >= args.Length)
+                {
+                    error = "--status requires a value";
+                    return false;
+                }
                 statusList.Add(args[++i]);
                 continue;
             }
 
-            if (optionsWithValue.Contains(token))
+            if (FilterParser.OptionsWithValue.Contains(token))
             {
-                i++;
+                i++; // globaler Option-Wert
                 continue;
             }
 
-            if (token.StartsWith("-", StringComparison.Ordinal)) continue;
+            if (token.StartsWith('-')) continue;
             queueName ??= token;
         }
 

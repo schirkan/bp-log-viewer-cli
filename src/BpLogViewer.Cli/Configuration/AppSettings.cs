@@ -37,3 +37,14 @@ public sealed class TimezoneSettings
     /// <summary>IANA-TZ für Anzeige (architecture § 4.4).</summary>
     public string DisplayTimezone { get; set; } = "Europe/Berlin";
 }
+
+/// <summary>
+/// Schwellwerte für die Queue-Stale-Erkennung (Code-Review-Finding O6).
+/// Eine Queue gilt als "stale", wenn das älteste Pending-Item älter als
+/// <see cref="StalePendingThresholdHours"/> ist.
+/// </summary>
+public static class QueueThresholds
+{
+    /// <summary>24h — Schwellwert für <c>queue list</c> <c>stale</c>-Flag (F-008).</summary>
+    public const int StalePendingThresholdHours = 24;
+}

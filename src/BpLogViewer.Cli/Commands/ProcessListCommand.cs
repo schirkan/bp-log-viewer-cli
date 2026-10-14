@@ -1,10 +1,14 @@
 using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Data;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
 
 namespace BpLogViewer.Cli.Commands;
 
+/// <summary>
+/// <c>bp-log-viewer process list</c> (F-007).
+/// </summary>
 public static class ProcessListCommand
 {
     public static int Execute(string[] args, FilterSet filters)
@@ -15,10 +19,8 @@ public static class ProcessListCommand
             return 11;
         }
 
-        var settings = ConfigurationLoader.Load(cliConnectionString: filters.ConnectionString);
-        if (string.IsNullOrEmpty(settings.Database.ConnectionString))
+        if (!CommandHost.TryLoadSettings(filters, out var settings))
         {
-            ErrorWriter.WriteErrorAsync("config_invalid", "appsettings.json nicht gefunden oder Database.ConnectionString leer. Siehe self-test für Diagnose.", 3).GetAwaiter().GetResult();
             return 3;
         }
 
@@ -27,44 +29,24 @@ public static class ProcessListCommand
             using var db = new BpDbContext(settings);
             var repo = new ProcessRepository(db);
 
-            var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
-                ? FilterSet.MaxRowsAbsoluteCeiling
-                : filters.EffectiveMaxRows;
-
+            var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.List(name, nameContains, type, hasErrorsSince, effectiveMax + 1);
-
-            var truncated = rows.Count > effectiveMax;
-            if (truncated)
-            {
-                rows.RemoveAt(rows.Count - 1);
-                ErrorWriter.WriteWarningAsync("output_truncated", $"{effectiveMax} of {effectiveMax}+ rows. Use --output to write full result.").GetAwaiter().GetResult();
-            }
-
-            if (!string.IsNullOrWhiteSpace(filters.Output))
-            {
-                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.ProcessInfo, filters.Output, out var code, out var msg))
-                {
-                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", msg ?? "failed to write output file", 6).GetAwaiter().GetResult();
-                    return 6;
-                }
-                return truncated ? 2 : 0;
-            }
-
-            foreach (var row in rows)
-            {
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(row, PayloadJsonContext.Default.ProcessInfo));
-            }
-
-            return truncated ? 2 : 0;
+            var truncated = CommandHost.Truncate(rows, effectiveMax);
+            return CommandHost.Emit(rows, PayloadJsonContext.Default.ProcessInfo, filters, truncated);
         }
         catch (Exception ex)
         {
-            ErrorWriter.WriteErrorAsync("db_error", ex.Message, 5).GetAwaiter().GetResult();
-            return 5;
+            return CommandHost.WriteDbError(ex);
         }
     }
 
-    private static bool ParseArgs(string[] args, out string? name, out bool nameContains, out string? type, out DateTimeOffset? hasErrorsSince, out string? error)
+    private static bool ParseArgs(
+        string[] args,
+        out string? name,
+        out bool nameContains,
+        out string? type,
+        out DateTimeOffset? hasErrorsSince,
+        out string? error)
     {
         name = null;
         nameContains = false;

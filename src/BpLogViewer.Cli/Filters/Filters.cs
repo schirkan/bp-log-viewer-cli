@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace BpLogViewer.Cli.Filters;
 
 /// <summary>
@@ -8,7 +10,7 @@ public sealed record Filters(
     DateTimeOffset? Until,
     string? Process,
     string? Resource,
-    string[]? Status,
+    IReadOnlyList<string>? Status,
     bool HasException,
     string? Level,
     string? Text,

@@ -1,6 +1,7 @@
 using System.Data;
 using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Data;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using Microsoft.Data.SqlClient;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
@@ -33,10 +34,8 @@ public static class SessionLogCommand
 
         var query = parsed!;
 
-        var settings = ConfigurationLoader.Load(cliConnectionString: filters.ConnectionString);
-        if (string.IsNullOrEmpty(settings.Database.ConnectionString))
+        if (!CommandHost.TryLoadSettings(filters, out var settings))
         {
-            ErrorWriter.WriteErrorAsync("config_invalid", "appsettings.json nicht gefunden oder Database.ConnectionString leer. Siehe self-test für Diagnose.", 3).GetAwaiter().GetResult();
             return 3;
         }
 
@@ -78,9 +77,7 @@ public static class SessionLogCommand
 
             var resultTypeNames = LoadResultTypeNames(settings);
 
-            var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
-                ? FilterSet.MaxRowsAbsoluteCeiling
-                : filters.EffectiveMaxRows;
+            var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.List(
                 tableName: activeTable,
                 sessionNumber: query.SessionNumber,
@@ -91,34 +88,12 @@ public static class SessionLogCommand
                 maxRowsPlusOne: effectiveMax + 1,
                 resultTypeNames: resultTypeNames);
 
-            var truncated = rows.Count > effectiveMax;
-            if (truncated)
-            {
-                rows.RemoveAt(rows.Count - 1);
-                ErrorWriter.WriteWarningAsync("output_truncated", $"{effectiveMax} of {effectiveMax}+ rows. Use --output to write full result.").GetAwaiter().GetResult();
-            }
-
-            if (!string.IsNullOrWhiteSpace(filters.Output))
-            {
-                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionLogEntry, filters.Output, out var code, out var message))
-                {
-                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
-                    return 6;
-                }
-                return truncated ? 2 : 0;
-            }
-
-            foreach (var row in rows)
-            {
-                Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(row, PayloadJsonContext.Default.SessionLogEntry));
-            }
-
-            return truncated ? 2 : 0;
+            var truncated = CommandHost.Truncate(rows, effectiveMax);
+            return CommandHost.Emit(rows, PayloadJsonContext.Default.SessionLogEntry, filters, truncated);
         }
         catch (Exception ex)
         {
-            ErrorWriter.WriteErrorAsync("db_error", ex.Message, 5).GetAwaiter().GetResult();
-            return 5;
+            return CommandHost.WriteDbError(ex);
         }
     }
 
@@ -145,9 +120,11 @@ public static class SessionLogCommand
                 result[reader.GetInt32(0)] = reader.GetString(1);
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // Fallback bleibt aktiv.
+            // Fallback bleibt aktiv, aber wir warnen, damit der KI-Konsument
+            // den Diagnose-Pfad nachvollziehen kann (Code-Review-Finding C6).
+            ErrorWriter.WriteWarningAsync("result_type_table_unavailable", ex.Message).GetAwaiter().GetResult();
         }
 
         return result;
@@ -158,12 +135,6 @@ public static class SessionLogCommand
         int? sessionNumber = null;
         string? stage = null;
         var fullResult = false;
-
-        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
-            "--max-rows", "--format", "--output", "--out-file", "--connection-string", "--stage"
-        };
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -188,9 +159,9 @@ public static class SessionLogCommand
                 continue;
             }
 
-            if (optionsWithValue.Contains(token))
+            if (FilterParser.OptionsWithValue.Contains(token))
             {
-                i++; // global option value
+                i++; // globaler Option-Wert
                 continue;
             }
 

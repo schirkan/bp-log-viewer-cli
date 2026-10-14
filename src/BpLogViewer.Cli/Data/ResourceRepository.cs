@@ -30,10 +30,10 @@ public sealed class ResourceRepository
                 StatusId: reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
                 ProcessesRunning: reader.IsDBNull(4) ? null : (int?)reader.GetInt32(4),
                 ActionsRunning: reader.IsDBNull(5) ? null : (int?)reader.GetInt32(5),
-                LastUpdated: reader.IsDBNull(6) ? null : AssumeUtc(reader.GetDateTime(6)),
-                LastLoggedIn: reader.IsDBNull(7) ? null : AssumeUtc(reader.GetDateTime(7)),
+                LastUpdated: reader.IsDBNull(6) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(6)),
+                LastLoggedIn: reader.IsDBNull(7) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(7)),
                 CurrentSessionNumber: reader.IsDBNull(8) ? null : (int?)reader.GetInt32(8),
-                CurrentSessionStartedAt: reader.IsDBNull(9) ? null : AssumeUtc(reader.GetDateTime(9)),
+                CurrentSessionStartedAt: reader.IsDBNull(9) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(9)),
                 Fqdn: reader.IsDBNull(10) ? null : reader.GetString(10)));
         }
 
@@ -91,8 +91,4 @@ public sealed class ResourceRepository
         return cmd;
     }
 
-    private static DateTimeOffset AssumeUtc(DateTime dt)
-    {
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
-    }
 }

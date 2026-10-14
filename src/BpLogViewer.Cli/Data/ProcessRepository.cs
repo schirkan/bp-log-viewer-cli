@@ -28,9 +28,9 @@ public sealed class ProcessRepository
                 Name: reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                 Type: reader.IsDBNull(2) ? null : MapType(reader.GetString(2)),
                 Version: reader.IsDBNull(3) ? null : reader.GetString(3),
-                LastModified: reader.IsDBNull(4) ? null : AssumeUtc(reader.GetDateTime(4)),
+                LastModified: reader.IsDBNull(4) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(4)),
                 LastSessionNumber: reader.IsDBNull(5) ? null : (int?)reader.GetInt32(5),
-                LastSessionStartedAt: reader.IsDBNull(6) ? null : AssumeUtc(reader.GetDateTime(6)),
+                LastSessionStartedAt: reader.IsDBNull(6) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(6)),
                 SessionCountTotal: reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
                 SessionCountFailedSince: reader.IsDBNull(8) ? 0 : reader.GetInt32(8),
                 AvgDurationSec: reader.IsDBNull(9) ? null : (double?)Convert.ToDouble(reader.GetValue(9), System.Globalization.CultureInfo.InvariantCulture)));
@@ -107,8 +107,4 @@ public sealed class ProcessRepository
          : code.Equals("P", StringComparison.OrdinalIgnoreCase) ? "process"
          : code;
 
-    private static DateTimeOffset AssumeUtc(DateTime dt)
-    {
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
-    }
 }

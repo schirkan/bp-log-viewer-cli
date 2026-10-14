@@ -1,5 +1,6 @@
 using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Data;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
 
@@ -18,36 +19,26 @@ public static class SessionGetCommand
             return 11;
         }
 
-        var query = parsedQuery!;
-        var settings = ConfigurationLoader.Load(cliConnectionString: filters.ConnectionString);
-        if (string.IsNullOrEmpty(settings.Database.ConnectionString))
+        if (!CommandHost.TryLoadSettings(filters, out var settings))
         {
-            ErrorWriter.WriteErrorAsync(
-                "config_invalid",
-                "appsettings.json nicht gefunden oder Database.ConnectionString leer. Siehe self-test für Diagnose.",
-                3).GetAwaiter().GetResult();
             return 3;
         }
 
-        var statusCache = new StatusCache();
-        try
+        if (!CommandHost.TryLoadStatusCache(settings, out var statusCache))
         {
-            statusCache.Load(settings);
-        }
-        catch (Exception ex)
-        {
-            ErrorWriter.WriteErrorAsync("status_cache_load_failed", ex.Message, 5).GetAwaiter().GetResult();
             return 5;
         }
 
+        var query = parsedQuery!;
         try
         {
             using var db = new BpDbContext(settings);
             var repo = new SessionRepository(db);
 
+            // ParseArgs garantiert genau eines von beiden gesetzt (SessionNumber ODER SessionId).
             var details = query.SessionNumber.HasValue
                 ? repo.GetBySessionNumber(query.SessionNumber.Value, query.IncludeStateXml)
-                : repo.GetBySessionId(query.SessionId ?? Guid.Empty, query.IncludeStateXml);
+                : repo.GetBySessionId(query.SessionId!.Value, query.IncludeStateXml);
 
             if (details is null)
             {
@@ -71,25 +62,11 @@ public static class SessionGetCommand
                 ErrorWriter.WriteWarningAsync("output_truncated", $"work_queue_items limited to {SessionRepository.WorkQueueItemsLimit}").GetAwaiter().GetResult();
             }
 
-            if (!string.IsNullOrWhiteSpace(filters.Output))
-            {
-                var rows = new[] { details };
-                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionDetails, filters.Output, out var code, out var message))
-                {
-                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
-                    return 6;
-                }
-                return 0;
-            }
-
-            var json = System.Text.Json.JsonSerializer.Serialize(details, PayloadJsonContext.Default.SessionDetails);
-            Console.WriteLine(json);
-            return 0;
+            return CommandHost.Emit(new[] { details }, PayloadJsonContext.Default.SessionDetails, filters, wasTruncated: false);
         }
         catch (Exception ex)
         {
-            ErrorWriter.WriteErrorAsync("db_error", ex.Message, 5).GetAwaiter().GetResult();
-            return 5;
+            return CommandHost.WriteDbError(ex);
         }
     }
 
@@ -98,12 +75,6 @@ public static class SessionGetCommand
         int? sessionNumber = null;
         Guid? sessionId = null;
         var includeStateXml = false;
-
-        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
-            "--max-rows", "--format", "--output", "--out-file", "--connection-string", "--session-id"
-        };
 
         for (var i = 0; i < args.Length; i++)
         {
@@ -135,15 +106,15 @@ public static class SessionGetCommand
                 continue;
             }
 
-            if (optionsWithValue.Contains(token))
+            if (FilterParser.OptionsWithValue.Contains(token))
             {
-                i++; // global option value
+                i++; // globaler Option-Wert
                 continue;
             }
 
             if (token.StartsWith("-", StringComparison.Ordinal))
             {
-                continue; // globale Optionen wurden bereits in FilterParser gecheckt
+                continue;
             }
 
             if (sessionNumber.HasValue)

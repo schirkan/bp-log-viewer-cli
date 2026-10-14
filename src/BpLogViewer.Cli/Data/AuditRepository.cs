@@ -25,7 +25,7 @@ public sealed class AuditRepository
         {
             rows.Add(new AuditEventInfo(
                 EventId: reader.GetInt32(0),
-                EventAt: AssumeUtc(reader.GetDateTime(1)),
+                EventAt: DateTimeUtils.AssumeUtc(reader.GetDateTime(1)),
                 Code: reader.IsDBNull(2) ? null : reader.GetString(2),
                 Narrative: reader.IsDBNull(3) ? null : reader.GetString(3),
                 SrcUser: reader.IsDBNull(4) ? null : reader.GetString(4),
@@ -88,8 +88,4 @@ public sealed class AuditRepository
         return cmd;
     }
 
-    private static DateTimeOffset AssumeUtc(DateTime dt)
-    {
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Utc));
-    }
 }

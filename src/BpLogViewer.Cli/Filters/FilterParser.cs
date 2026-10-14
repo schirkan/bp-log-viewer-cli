@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using System.Globalization;
+using BpLogViewer.Cli.Output;
 
 namespace BpLogViewer.Cli.Filters;
 
@@ -9,7 +11,14 @@ namespace BpLogViewer.Cli.Filters;
 /// </summary>
 public static class FilterParser
 {
-    /// <summary>Parses <paramref name="args"/> into <see cref="Filters"/>. Throws on invalid input.</summary>
+    /// <summary>Globale Optionen mit Value (für Single-Pass-Parsing im Dispatcher).</summary>
+    public static readonly IReadOnlySet<string> OptionsWithValue = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
+        "--max-rows", "--format", "--output", "--out-file", "--connection-string"
+    };
+
+    /// <summary>Parst <paramref name="args"/> in <see cref="Filters"/>. Wirft <see cref="FilterValidationException"/>.</summary>
     public static Filters Parse(string[] args, Filters? defaults = null)
     {
         defaults ??= Filters.Empty;
@@ -17,7 +26,7 @@ public static class FilterParser
         DateTimeOffset? until = defaults.Until;
         string? process = defaults.Process;
         string? resource = defaults.Resource;
-        string[]? status = defaults.Status;
+        var status = defaults.Status is null ? null : new List<string>(defaults.Status);
         bool hasException = defaults.HasException;
         string? level = defaults.Level;
         string? text = defaults.Text;
@@ -33,22 +42,22 @@ public static class FilterParser
             {
                 case "--since":
                     since = ParseIsoDate(RequireValue(args, ref i, "--since"));
-                    break;
+                    continue;
                 case "--until":
                     until = ParseIsoDate(RequireValue(args, ref i, "--until"));
-                    break;
+                    continue;
                 case "--process":
                     process = RequireValue(args, ref i, "--process");
-                    break;
+                    continue;
                 case "--resource":
                     resource = RequireValue(args, ref i, "--resource");
-                    break;
+                    continue;
                 case "--status":
-                    status = AppendStatus(status, RequireValue(args, ref i, "--status"));
-                    break;
+                    (status ??= new List<string>()).Add(RequireValue(args, ref i, "--status"));
+                    continue;
                 case "--has-exception":
                     hasException = true;
-                    break;
+                    continue;
                 case "--level":
                     level = RequireValue(args, ref i, "--level");
                     if (level is not ("info" or "warn" or "error" or "debug"))
@@ -58,10 +67,10 @@ public static class FilterParser
                             $"--level: unknown value '{level}' (allowed: info|warn|error|debug)",
                             11);
                     }
-                    break;
+                    continue;
                 case "--text":
                     text = RequireValue(args, ref i, "--text");
-                    break;
+                    continue;
                 case "--max-rows":
                 {
                     var maxRowsStr = RequireValue(args, ref i, "--max-rows");
@@ -81,11 +90,11 @@ public static class FilterParser
                             $"{maxRows} > {Filters.MaxRowsAbsoluteCeiling}",
                             8);
                     }
-                    break;
+                    continue;
                 }
                 case "--verbose":
                     verbose = true;
-                    break;
+                    continue;
                 case "--format":
                     format = RequireValue(args, ref i, "--format");
                     if (format is not ("jsonl" or "table"))
@@ -95,15 +104,27 @@ public static class FilterParser
                             $"--format: unknown value '{format}' (allowed: jsonl|table)",
                             11);
                     }
-                    break;
+                    continue;
                 case "--output":
                 case "--out-file":
                     output = RequireValue(args, ref i, args[i]);
-                    break;
+                    continue;
                 case "--connection-string":
                     connectionString = RequireValue(args, ref i, "--connection-string");
-                    break;
-                // Unknown args are ignored (may be command/subcommand tokens or future options)
+                    continue;
+                default:
+                    if (args[i].StartsWith("-", StringComparison.Ordinal))
+                    {
+                        // Unbekannte globale Option: Warning statt silent (fängt Tippfehler ab).
+                        ErrorWriter.WriteWarningAsync(
+                            "filter_unknown_option",
+                            $"unrecognized global option '{args[i]}' (ignored; check spelling)").GetAwaiter().GetResult();
+                        if (OptionsWithValue.Contains(args[i]))
+                        {
+                            i++;
+                        }
+                    }
+                    continue;
             }
         }
 
@@ -120,7 +141,7 @@ public static class FilterParser
             Until: until,
             Process: process,
             Resource: resource,
-            Status: status,
+            Status: status is null || status.Count == 0 ? null : status,
             HasException: hasException,
             Level: level,
             Text: text,
@@ -131,7 +152,7 @@ public static class FilterParser
             ConnectionString: connectionString);
     }
 
-    /// <summary>ISO-8601 with or without offset. Without offset → assume UTC (architecture § 4.4).</summary>
+    /// <summary>ISO-8601 mit/ohne Offset. Ohne Offset → UTC (architecture § 4.4).</summary>
     private static DateTimeOffset ParseIsoDate(string value)
     {
         if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dto))
@@ -141,7 +162,7 @@ public static class FilterParser
 
         throw new FilterValidationException(
             "filter_invalid",
-            $"invalid ISO-8601 datetime '{value}'",
+            $"invalid ISO-8601 datetime '{value}' (expected e.g. 2026-01-15T08:00:00Z)",
             11);
     }
 
@@ -156,18 +177,5 @@ public static class FilterParser
         }
 
         return args[++i];
-    }
-
-    private static string[] AppendStatus(string[]? existing, string value)
-    {
-        if (existing is null)
-        {
-            return new[] { value };
-        }
-
-        var arr = new string[existing.Length + 1];
-        Array.Copy(existing, arr, existing.Length);
-        arr[existing.Length] = value;
-        return arr;
     }
 }

@@ -33,12 +33,18 @@ public static class Program
             var (subCommand, globalArgs, subArgs) = SplitArgs(args);
 
             // F-011: globale Filter/Optionen validieren.
-            // Zusätzlich parse über subArgs, damit globale Optionen auch hinter dem Command
-            // funktionieren (z. B. "version --since ...").
-            var allOptionArgs = globalArgs.Concat(subArgs).ToArray();
-            var filters = FilterParser.Parse(allOptionArgs);
+            // Wichtig: globale Optionen werden aus ALLEN Args geparst (nicht nur
+            // globalArgs), damit z. B. "process list --max-rows 1" genauso
+            // funktioniert wie "--max-rows 1 process list". Der Sub-Command-Name
+            // und Sub-Args werden von FilterParser ignoriert (siehe default-Branch).
+            // Sub-Args werden vom jeweiligen Command-Parser verarbeitet, der
+            // globale Optionen via FilterParser.OptionsWithValue überspringt.
+            var filters = FilterParser.Parse(args);
 
-            var wantsVersionFlag = args.Any(a => a is "--version" or "-v");
+            // Version-Flag wird gegen die bereits geparsten globalen Args geprüft,
+            // damit "session list --version" korrekt als unknown_command behandelt wird
+            // (und nicht fälschlich "version" aufruft).
+            var wantsVersionFlag = globalArgs.Any(a => a is "--version" or "-v");
 
             return subCommand switch
             {
@@ -121,8 +127,6 @@ public static class Program
         Console.Error.WriteLine("  --max-rows <n>  --since <iso>  --until <iso>");
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
-        Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001..F-010 🚧.");
         return 0;
     }
 
@@ -130,8 +134,7 @@ public static class Program
     {
         ErrorWriter.WriteErrorAsync(
             "not_implemented",
-            $"Command '{command}' ist in der Spec ({spec}) definiert, aber noch nicht implementiert. " +
-            "Folge-Reihenfolge: Rest-Finish/Polish läuft.",
+            $"Command '{command}' ist in der Spec ({spec}) definiert, aber noch nicht implementiert.",
             0).GetAwaiter().GetResult();
         return 0;
     }

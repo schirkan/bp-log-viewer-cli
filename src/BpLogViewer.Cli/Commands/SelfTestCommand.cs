@@ -1,8 +1,10 @@
 using System.Data;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.Json;
 using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Data;
+using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using Microsoft.Data.SqlClient;
 using Microsoft.Win32;
@@ -162,9 +164,12 @@ public static class SelfTestCommand
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
-            // registry fallback below
+            // DB-Lookup fehlgeschlagen — Fallback auf Registry, aber Warnung ausgeben,
+            // damit der KI-Konsument den Diagnose-Pfad nachvollziehen kann
+            // (Code-Review-Finding C7).
+            ErrorWriter.WriteWarningAsync("bp_version_db_lookup_failed", ex.Message).GetAwaiter().GetResult();
         }
 
         try
@@ -256,8 +261,12 @@ public static class SelfTestCommand
         }
     }
 
+    /// <summary>
+    /// Saubere JSON-Stringification für die jsonl-Ausgabe (statt naivem
+    /// <c>Replace</c>-Chain, der bei JSON-Strings in den Daten kaputt gehen kann).
+    /// </summary>
     private static string Escape(string value)
     {
-        return value.Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("\r", " ").Replace("\n", " ");
+        return JsonSerializer.Serialize(value);
     }
 }
