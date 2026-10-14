@@ -29,7 +29,7 @@ public sealed class SessionLogRepository
     public List<SessionLogEntry> List(
         string tableName,
         int sessionNumber,
-        int? resultType,
+        int[]? resultTypes,
         string? text,
         string? stage,
         bool fullResult,
@@ -39,7 +39,7 @@ public sealed class SessionLogRepository
         using var conn = _context.CreateConnection();
         conn.Open();
 
-        using var cmd = BuildListCommand(conn, tableName, sessionNumber, resultType, text, stage, fullResult, maxRowsPlusOne);
+        using var cmd = BuildListCommand(conn, tableName, sessionNumber, resultTypes, text, stage, fullResult, maxRowsPlusOne);
         using var reader = cmd.ExecuteReader(CommandBehavior.SequentialAccess);
 
         var rows = new List<SessionLogEntry>(maxRowsPlusOne);
@@ -79,7 +79,7 @@ public sealed class SessionLogRepository
         SqlConnection conn,
         string tableName,
         int sessionNumber,
-        int? resultType,
+        int[]? resultTypes,
         string? text,
         string? stage,
         bool fullResult,
@@ -99,7 +99,7 @@ public sealed class SessionLogRepository
                    attributesize
             FROM {tableName}
             WHERE sessionnumber = @session_number
-              AND (@result_type IS NULL OR resulttype = @result_type)
+              AND (@result_type_active = 0 OR resulttype IN (SELECT CAST(value AS INT) FROM STRING_SPLIT(@result_type_csv, ',')))
               AND (@text IS NULL OR result LIKE '%' + @text + '%')
               AND (@stage IS NULL OR stagename = @stage)
             ORDER BY logid ASC;";
@@ -107,7 +107,9 @@ public sealed class SessionLogRepository
         var cmd = new SqlCommand(sql, conn);
         cmd.Parameters.Add(new SqlParameter("@max_rows", SqlDbType.Int) { Value = maxRowsPlusOne });
         cmd.Parameters.Add(new SqlParameter("@session_number", SqlDbType.Int) { Value = sessionNumber });
-        cmd.Parameters.Add(new SqlParameter("@result_type", SqlDbType.Int) { Value = (object?)resultType ?? DBNull.Value });
+        var resultTypeActive = resultTypes is { Length: > 0 };
+        cmd.Parameters.Add(new SqlParameter("@result_type_active", SqlDbType.Bit) { Value = resultTypeActive });
+        cmd.Parameters.Add(new SqlParameter("@result_type_csv", SqlDbType.NVarChar, -1) { Value = resultTypeActive ? string.Join(',', resultTypes!) : (object)DBNull.Value });
         cmd.Parameters.Add(new SqlParameter("@text", SqlDbType.NVarChar, -1) { Value = (object?)text ?? DBNull.Value });
         cmd.Parameters.Add(new SqlParameter("@stage", SqlDbType.NVarChar, 256) { Value = (object?)stage ?? DBNull.Value });
         return cmd;

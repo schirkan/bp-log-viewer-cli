@@ -142,11 +142,24 @@ public static class SelfTestCommand
         {
             using var conn = new SqlConnection(settings.Database.ConnectionString);
             conn.Open();
-            using var cmd = new SqlCommand("SELECT TOP 1 dbversion FROM BPADBVersion ORDER BY scriptrundate DESC", conn);
-            var dbValue = cmd.ExecuteScalar()?.ToString();
-            if (!string.IsNullOrWhiteSpace(dbValue))
+
+            // Produktversion bevorzugt aus DB (BPAEnvironment.Version), danach Schema-Version.
+            using (var cmd = new SqlCommand("SELECT TOP 1 Version FROM BPAEnvironment WHERE Version IS NOT NULL ORDER BY Version DESC", conn))
             {
-                return ("ok", dbValue, "db", "db schema version from BPADBVersion");
+                var envVersion = cmd.ExecuteScalar()?.ToString();
+                if (!string.IsNullOrWhiteSpace(envVersion))
+                {
+                    return ("ok", envVersion, "db", "product version from BPAEnvironment");
+                }
+            }
+
+            using (var cmd = new SqlCommand("SELECT TOP 1 dbversion FROM BPADBVersion ORDER BY scriptrundate DESC", conn))
+            {
+                var dbValue = cmd.ExecuteScalar()?.ToString();
+                if (!string.IsNullOrWhiteSpace(dbValue))
+                {
+                    return ("ok", dbValue, "db", "db schema version from BPADBVersion");
+                }
             }
         }
         catch

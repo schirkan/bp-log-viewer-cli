@@ -18,7 +18,9 @@ public static class SessionLogCommand
         [1] = "Warning",
         [2] = "Error",
         [3] = "Debug",
-        [4] = "Exception"
+        [4] = "Exception",
+        // BP 7.5 NonUnicode-Log auf diesem System nutzt 64 für Error-Zeilen.
+        [64] = "Error"
     };
 
     public static int Execute(string[] args, FilterSet filters)
@@ -43,15 +45,15 @@ public static class SessionLogCommand
             ErrorWriter.WriteWarningAsync("text_filter_perf_warning", "full table scan, consider narrowing filters").GetAwaiter().GetResult();
         }
 
-        var levelMap = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase)
+        var levelMap = new Dictionary<string, int[]>(StringComparer.OrdinalIgnoreCase)
         {
-            ["info"] = 0,
-            ["warn"] = 1,
-            ["error"] = 2,
-            ["debug"] = 3
+            ["info"] = new[] { 0 },
+            ["warn"] = new[] { 1 },
+            ["error"] = new[] { 2, 64 },
+            ["debug"] = new[] { 3 }
         };
 
-        int? resultType = null;
+        int[]? resultTypes = null;
         if (!string.IsNullOrWhiteSpace(filters.Level))
         {
             if (!levelMap.TryGetValue(filters.Level, out var mapped))
@@ -59,7 +61,7 @@ public static class SessionLogCommand
                 ErrorWriter.WriteErrorAsync("filter_invalid", $"unknown --level '{filters.Level}'", 11).GetAwaiter().GetResult();
                 return 11;
             }
-            resultType = mapped;
+            resultTypes = mapped;
         }
 
         try
@@ -82,7 +84,7 @@ public static class SessionLogCommand
             var rows = repo.List(
                 tableName: activeTable,
                 sessionNumber: query.SessionNumber,
-                resultType: resultType,
+                resultTypes: resultTypes,
                 text: filters.Text,
                 stage: query.Stage,
                 fullResult: query.FullResult,
