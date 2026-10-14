@@ -32,13 +32,13 @@ public static class Program
             var (subCommand, globalArgs, subArgs) = SplitArgs(args);
 
             // Validiere alle globalen Optionen + Filter (F-011). Wirft FilterValidationException.
-            _ = FilterParser.Parse(globalArgs);
+            var filters = FilterParser.Parse(globalArgs);
 
             return subCommand switch
             {
                 "" or "help" or "--help" or "-h" => PrintRootHelp(),
                 "version" or "--version" or "-v" => VersionCommand.Execute(),
-                "self-test" => NotYetImplemented("self-test", "F-014"),
+                "self-test" => SelfTestCommand.Execute(filters),
                 "session" => DispatchSession(subArgs),
                 "resource" => DispatchResource(subArgs),
                 "process" => DispatchProcess(subArgs),
@@ -72,7 +72,6 @@ public static class Program
                 return (args[i], args[..i], args[(i + 1)..]);
             }
         }
-        // Kein Sub-Command — alle Args sind global
         return ("", args, Array.Empty<string>());
     }
 
@@ -97,7 +96,7 @@ public static class Program
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: alle 14 Specs ✅ Freigegeben. Implementation in Arbeit (F-013 Fundament ✅, F-011 Common Filters ✅).");
+        Console.Error.WriteLine("Status: F-013 ✅ · F-014 version ✅ · F-011 Common Filters ✅ · F-001 DB Connection (in Arbeit)");
         return 0;
     }
 
@@ -106,9 +105,9 @@ public static class Program
         ErrorWriter.WriteErrorAsync(
             "not_implemented",
             $"Command '{command}' ist in der Spec ({spec}) definiert, aber noch nicht implementiert. " +
-            "Folge-Reihenfolge der Implementation: F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010.",
+            "Folge-Reihenfolge: F-002 → F-003 → F-004 → F-005 → F-012 → F-006 → F-007 → F-008 → F-009 → F-010.",
             0).GetAwaiter().GetResult();
-        return 0; // Nicht-Fehler, nur Info — Spec ist abgenommen, Implementation läuft
+        return 0;
     }
 
     private static int UnknownCommand(string command)
