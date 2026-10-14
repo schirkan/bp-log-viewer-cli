@@ -28,7 +28,7 @@
 - **code-review 2026-10-13 abgeschlossen** (Skill `code-review`, 2 CRITICAL + 8 MAJOR + 7 MINOR + 5 NIT). Alle CRITICAL + MAJOR-Blocker in derselben Session gefixt. MINOR-Items in `## Blocker → Implementation-Notes` überführt.
 - Lizenz: **MIT** (`LICENSE`, README-Badge).
 - **Alle 14 Specs ✅ Freigegeben** (Martin-Abnahme 2026-10-13 21:47).
-- Implementierungsstand: F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-014 🚧.
+- Implementierungsstand: F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-012/F-014 🚧.
 - Git-Repo: **eingerichtet** (siehe `## Git`).
 - Workboard: **bewusst nicht verwendet** (siehe ⚠️ oben).
 
@@ -57,7 +57,7 @@
 | F-009 | Work Queue Items | Mittel | ✅ |
 | F-010 | Audit Events | Niedrig | ✅ |
 | F-011 | Common Filters | Hoch | ✔️ |
-| F-012 | Output to File | **Hoch** (Martin-Vorgabe) | ✅ |
+| F-012 | Output to File | **Hoch** (Martin-Vorgabe) | 🚧 |
 | F-013 | Output Format (jsonl / Table) | Hoch | ✔️ |
 | F-014 | Self-Test & Diagnostics | Mittel | 🚧 |
 
@@ -148,4 +148,5 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-14 | Weiterbau: F-011 Parser/Validierung stabilisiert, `self-test` (F-001/F-014-Teil) aktiv mit DB-Connect/StatusCache, `session list` (F-002) gegen `BPVSessionInfo` lauffähig mit jsonl-Output. |
 | 2026-10-14 | F-003 gestartet: `session get` implementiert (Suche per Session-Nr./UUID, optional `--include-state-xml`, Queue-Items + truncation-Flag, Exit 10 bei nicht gefunden). |
 | 2026-10-14 | F-004/F-005 gestartet: `session log` (aktive Log-Tabelle, Filter + truncation) und `session errors` (List/Aggregate) implementiert. |
+| 2026-10-14 | F-012/F-014 erweitert: Output-to-File (`--output`) mit Marker-Response + Pfadschutz (Traversal-Block), `self-test` um BP-Version, Tabellen-Check, aktive Log-Tabelle und Write-Test ergänzt. |
 | 2026-10-14 | Release-Pipeline ergänzt: `.github/workflows/release-single-exe.yml` baut bei Tag `v*` ein self-contained single-file `win-x64`-Artefakt, packt ZIP + SHA256 und veröffentlicht als GitHub Release Asset. |

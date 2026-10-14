@@ -62,7 +62,9 @@ public static class SessionListCommand
         }
 
         // 4. Query ausführen (LIMIT max+1 für Overflow-Detection)
-        var effectiveMax = filters.EffectiveMaxRows;
+        var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
+            ? FilterSet.MaxRowsAbsoluteCeiling
+            : filters.EffectiveMaxRows;
         const int overflowProbe = 1;
         List<SessionInfo> rows;
         try
@@ -102,9 +104,12 @@ public static class SessionListCommand
 
         if (filters.Output is { Length: > 0 } outputPath)
         {
-            // F-012 (später)
-            ErrorWriter.WriteErrorAsync("not_implemented", "--output noch nicht implementiert (F-012 folgt)", 0).GetAwaiter().GetResult();
-            return 0;
+            if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionInfo, outputPath, out var code, out var message))
+            {
+                ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
+                return 6;
+            }
+            return truncated ? 2 : 0;
         }
 
         foreach (var row in rows)

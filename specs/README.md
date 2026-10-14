@@ -50,11 +50,11 @@
 | F-009 | Work Queue Items | ✅ Freigegeben | Mittel | [spec](feature-F-009-queue-items.md) | F-001, F-008, F-011, F-012, F-013 |
 | F-010 | Audit Events | ✅ Freigegeben | Niedrig | [spec](feature-F-010-audit-events.md) | F-001, F-011, F-012, F-013 |
 | F-011 | Common Filters | ✔️ Fertig | Hoch | [spec](feature-F-011-common-filters.md) | architecture § 4.3, § 4.4, § 4.5, § 5, § 8 |
-| F-012 | Output to File | ✅ Freigegeben | **Hoch** (Martin-Vorgabe) | [spec](feature-F-012-output-to-file.md) | F-011, F-013, Skill `dotnet-config-path-anchoring` |
+| F-012 | Output to File | 🚧 In Umsetzung | **Hoch** (Martin-Vorgabe) | [spec](feature-F-012-output-to-file.md) | F-011, F-013, Skill `dotnet-config-path-anchoring` |
 | F-013 | Output Format (jsonl / Table) | ✔️ Fertig | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
 | F-014 | Self-Test & Diagnostics | 🚧 In Umsetzung | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 
-**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-014 🚧**. Nächste Reihenfolge: **F-012 → F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-012/F-014 🚧**. Nächste Reihenfolge: **F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
 
 ## Code-Review-Status (2026-10-13)
 
@@ -100,3 +100,4 @@ Erste code-review-Runde (Skill `code-review`) identifizierte **2 CRITICAL + 8 MA
 | 2026-10-14 | Implementierung fortgeführt: F-011 Common Filters stabilisiert (Validation + Exit-Codes), F-001-Teile für `self-test` (Config/LocalDB/DB/StatusCache) aktiv, F-002 `session list` gegen `BPVSessionInfo` mit jsonl-Output und Statusauflösung umgesetzt. |
 | 2026-10-14 | F-003 begonnen: `session get` implementiert (Lookup via Session Number/SessionId, optional `--include-state-xml`, Work-Queue-Items, `session_not_found` mit Exit 10). |
 | 2026-10-14 | F-004/F-005 begonnen: `session log` (Tabellenwahl NonUnicode→Unicode, Filter `--level/--text/--stage`, truncation) und `session errors` (List + `--aggregate` + `--exception-type`) implementiert. |
+| 2026-10-14 | F-012/F-014 weitergezogen: `--output`-Dateischreiben mit Marker (`output_written`, `row_count`, `bytes`) inkl. Root-Anker/Traversal-Block (Exit 6); `self-test` um BP-Version, Tabellencheck, aktive Log-Tabelle und Write-Test erweitert. |

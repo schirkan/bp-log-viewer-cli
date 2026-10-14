@@ -73,7 +73,12 @@ public static class SessionGetCommand
 
             if (!string.IsNullOrWhiteSpace(filters.Output))
             {
-                ErrorWriter.WriteErrorAsync("not_implemented", "--output noch nicht implementiert (F-012 folgt)", 0).GetAwaiter().GetResult();
+                var rows = new[] { details };
+                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionDetails, filters.Output, out var code, out var message))
+                {
+                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
+                    return 6;
+                }
                 return 0;
             }
 
@@ -94,53 +99,68 @@ public static class SessionGetCommand
         Guid? sessionId = null;
         var includeStateXml = false;
 
+        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
+            "--max-rows", "--format", "--output", "--out-file", "--connection-string", "--session-id"
+        };
+
         for (var i = 0; i < args.Length; i++)
         {
             var token = args[i];
-            switch (token)
+
+            if (token == "--include-state-xml")
             {
-                case "--session-id":
-                    if (i + 1 >= args.Length)
-                    {
-                        query = default;
-                        error = "--session-id requires a value";
-                        return false;
-                    }
-
-                    var value = args[++i];
-                    if (!Guid.TryParse(value, out var parsedId))
-                    {
-                        query = default;
-                        error = $"invalid --session-id: '{value}'";
-                        return false;
-                    }
-                    sessionId = parsedId;
-                    break;
-                case "--include-state-xml":
-                    includeStateXml = true;
-                    break;
-                default:
-                    if (token.StartsWith("-", StringComparison.Ordinal))
-                    {
-                        continue; // globale Optionen wurden bereits in FilterParser gecheckt
-                    }
-
-                    if (sessionNumber.HasValue)
-                    {
-                        query = default;
-                        error = "multiple session numbers provided";
-                        return false;
-                    }
-
-                    if (!int.TryParse(token, out var parsedNumber) || parsedNumber <= 0)
-                    {
-                        query = default;
-                        error = $"invalid session number: '{token}'";
-                        return false;
-                    }
-                    sessionNumber = parsedNumber;
-                    break;
+                includeStateXml = true;
+                continue;
             }
+
+            if (token == "--session-id")
+            {
+                if (i + 1 >= args.Length)
+                {
+                    query = default;
+                    error = "--session-id requires a value";
+                    return false;
+                }
+
+                var value = args[++i];
+                if (!Guid.TryParse(value, out var parsedId))
+                {
+                    query = default;
+                    error = $"invalid --session-id: '{value}'";
+                    return false;
+                }
+                sessionId = parsedId;
+                continue;
+            }
+
+            if (optionsWithValue.Contains(token))
+            {
+                i++; // global option value
+                continue;
+            }
+
+            if (token.StartsWith("-", StringComparison.Ordinal))
+            {
+                continue; // globale Optionen wurden bereits in FilterParser gecheckt
+            }
+
+            if (sessionNumber.HasValue)
+            {
+                query = default;
+                error = "multiple session numbers provided";
+                return false;
+            }
+
+            if (!int.TryParse(token, out var parsedNumber) || parsedNumber <= 0)
+            {
+                query = default;
+                error = $"invalid session number: '{token}'";
+                return false;
+            }
+
+            sessionNumber = parsedNumber;
         }
 
         if (sessionNumber.HasValue && sessionId.HasValue)

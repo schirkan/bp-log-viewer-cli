@@ -76,7 +76,9 @@ public static class SessionLogCommand
 
             var resultTypeNames = LoadResultTypeNames(settings);
 
-            var effectiveMax = filters.EffectiveMaxRows;
+            var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
+                ? FilterSet.MaxRowsAbsoluteCeiling
+                : filters.EffectiveMaxRows;
             var rows = repo.List(
                 tableName: activeTable,
                 sessionNumber: query.SessionNumber,
@@ -96,8 +98,12 @@ public static class SessionLogCommand
 
             if (!string.IsNullOrWhiteSpace(filters.Output))
             {
-                ErrorWriter.WriteErrorAsync("not_implemented", "--output noch nicht implementiert (F-012 folgt)", 0).GetAwaiter().GetResult();
-                return 0;
+                if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionLogEntry, filters.Output, out var code, out var message))
+                {
+                    ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
+                    return 6;
+                }
+                return truncated ? 2 : 0;
             }
 
             foreach (var row in rows)

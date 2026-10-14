@@ -43,7 +43,9 @@ public static class SessionErrorsCommand
             using var db = new BpDbContext(settings);
             var repo = new SessionErrorRepository(db);
 
-            var effectiveMax = filters.EffectiveMaxRows;
+            var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
+                ? FilterSet.MaxRowsAbsoluteCeiling
+                : filters.EffectiveMaxRows;
             var rows = repo.List(
                 since: filters.Since,
                 until: filters.Until,
@@ -60,24 +62,44 @@ public static class SessionErrorsCommand
                 ErrorWriter.WriteWarningAsync("output_truncated", $"{effectiveMax} of {effectiveMax}+ rows. Use --output to write full result.").GetAwaiter().GetResult();
             }
 
-            if (!string.IsNullOrWhiteSpace(filters.Output))
-            {
-                ErrorWriter.WriteErrorAsync("not_implemented", "--output noch nicht implementiert (F-012 folgt)", 0).GetAwaiter().GetResult();
-                return 0;
-            }
-
             if (!aggregate)
             {
                 for (var i = 0; i < rows.Count; i++)
                 {
                     var r = rows[i];
                     rows[i] = r with { StatusName = statusCache.GetName(r.Status) };
-                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(rows[i], PayloadJsonContext.Default.SessionInfo));
+                }
+
+                if (!string.IsNullOrWhiteSpace(filters.Output))
+                {
+                    if (!OutputFileWriter.TryWriteJsonLines(rows, PayloadJsonContext.Default.SessionInfo, filters.Output, out var code, out var message))
+                    {
+                        ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
+                        return 6;
+                    }
+                    return truncated ? 2 : 0;
+                }
+
+                foreach (var row in rows)
+                {
+                    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(row, PayloadJsonContext.Default.SessionInfo));
                 }
             }
             else
             {
-                foreach (var item in BuildAggregate(rows))
+                var aggregates = BuildAggregate(rows);
+
+                if (!string.IsNullOrWhiteSpace(filters.Output))
+                {
+                    if (!OutputFileWriter.TryWriteJsonLines(aggregates, PayloadJsonContext.Default.SessionErrorAggregate, filters.Output, out var code, out var message))
+                    {
+                        ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
+                        return 6;
+                    }
+                    return truncated ? 2 : 0;
+                }
+
+                foreach (var item in aggregates)
                 {
                     Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(item, PayloadJsonContext.Default.SessionErrorAggregate));
                 }
