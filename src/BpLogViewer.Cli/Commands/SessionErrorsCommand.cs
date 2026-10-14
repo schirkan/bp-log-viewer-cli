@@ -46,9 +46,12 @@ public static class SessionErrorsCommand
             var effectiveMax = (filters.Output is { Length: > 0 } && !filters.MaxRows.HasValue)
                 ? FilterSet.MaxRowsAbsoluteCeiling
                 : filters.EffectiveMaxRows;
+            var since = filters.Since ?? DateTimeOffset.UtcNow.AddHours(-24);
+            var until = filters.Until ?? DateTimeOffset.UtcNow;
+
             var rows = repo.List(
-                since: filters.Since,
-                until: filters.Until,
+                since: since,
+                until: until,
                 process: filters.Process,
                 resource: filters.Resource,
                 text: filters.Text,

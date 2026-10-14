@@ -71,9 +71,12 @@ public static class SessionListCommand
         {
             using var db = new BpDbContext(settings);
             var repo = new SessionRepository(db);
+            var since = filters.Since ?? DateTimeOffset.UtcNow.AddHours(-24);
+            var until = filters.Until ?? DateTimeOffset.UtcNow;
+
             rows = repo.List(
-                since: filters.Since,
-                until: filters.Until,
+                since: since,
+                until: until,
                 process: filters.Process,
                 resource: filters.Resource,
                 statusIds: statusIds,
