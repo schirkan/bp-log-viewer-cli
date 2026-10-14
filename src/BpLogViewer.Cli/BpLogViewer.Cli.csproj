@@ -3,6 +3,15 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
+    <!--
+      Single-RID-Setup: Wir bauen ausschließlich win-x64 (Blue Prism läuft nur
+      auf Windows). Dadurch erzeugt `dotnet restore` immer einen Asset-File
+      für `net8.0/win-x64`, und `dotnet publish -r win-x64` läuft ohne
+      NETSDK1047 ("Assets file doesn't have a target for 'net8.0/win-x64'").
+      Wenn später linux-x64 / arm64 dazukommen sollen, stattdessen
+      RuntimeIdentifiers (Plural) verwenden.
+    -->
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <RootNamespace>BpLogViewer.Cli</RootNamespace>
     <AssemblyName>bp-log-viewer</AssemblyName>
     <Nullable>enable</Nullable>

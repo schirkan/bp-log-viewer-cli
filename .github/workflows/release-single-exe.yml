@@ -37,10 +37,14 @@ jobs:
           Copy-Item appsettings.template.json src/BpLogViewer.Cli/appsettings.json -Force
 
       - name: Restore
-        run: dotnet restore src/BpLogViewer.Cli/BpLogViewer.Cli.csproj
+        # Wichtig: -r win-x64, sonst fehlt der Asset-Eintrag für
+        # net8.0/win-x64 und `dotnet publish` bricht mit NETSDK1047 ab.
+        # Belt-and-suspenders zum <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        # in der .csproj, damit auch Builds ohne csproj-Änderung funktionieren.
+        run: dotnet restore src/BpLogViewer.Cli/BpLogViewer.Cli.csproj -r win-x64
 
       - name: Build
-        run: dotnet build src/BpLogViewer.Cli/BpLogViewer.Cli.csproj -c Release --no-restore
+        run: dotnet build src/BpLogViewer.Cli/BpLogViewer.Cli.csproj -c Release -r win-x64 --no-restore
 
       - name: Publish single-file exe (win-x64)
         run: >-
