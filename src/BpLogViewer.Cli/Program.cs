@@ -119,7 +119,7 @@ public static class Program
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001/F-002/F-003 🚧.");
+        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001/F-002/F-003/F-004/F-005 🚧.");
         return 0;
     }
 
@@ -150,8 +150,8 @@ public static class Program
         {
             "list" => SessionListCommand.Execute(filters),
             "get" => SessionGetCommand.Execute(subArgs.Skip(1).ToArray(), filters),
-            "log" => NotYetImplemented("session log", "F-004"),
-            "errors" => NotYetImplemented("session errors", "F-005"),
+            "log" => SessionLogCommand.Execute(subArgs.Skip(1).ToArray(), filters),
+            "errors" => SessionErrorsCommand.Execute(subArgs.Skip(1).ToArray(), filters),
             _ => UnknownCommand($"session {subArgs[0]}")
         };
     }
