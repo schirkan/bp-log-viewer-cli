@@ -39,22 +39,22 @@
 
 | ID | Titel | Status | Priorität | Spec | Abhängigkeiten |
 |:---|:------|:-------|:----------|:-----|:---------------|
-| F-001 | Database Connection Management | 🚧 In Umsetzung | Hoch | [spec](feature-F-001-db-connection.md) | (Fundament) |
-| F-002 | Session List | 🚧 In Umsetzung | Hoch | [spec](feature-F-002-list-sessions.md) | F-001, F-011, F-012, F-013 |
-| F-003 | Session Details | 🚧 In Umsetzung | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
-| F-004 | Session Log | 🚧 In Umsetzung | Hoch | [spec](feature-F-004-session-log.md) | F-001, F-011, F-012, F-013 |
-| F-005 | Search Errors | 🚧 In Umsetzung | Hoch | [spec](feature-F-005-search-errors.md) | F-001, F-002, F-011, F-012, F-013 |
-| F-006 | Resources | 🚧 In Umsetzung | Mittel | [spec](feature-F-006-resources.md) | F-001, F-011, F-012, F-013 |
-| F-007 | Processes | 🚧 In Umsetzung | Mittel | [spec](feature-F-007-processes.md) | F-001, F-011, F-012, F-013 |
-| F-008 | Work Queues | 🚧 In Umsetzung | Mittel | [spec](feature-F-008-work-queues.md) | F-001, F-011, F-012, F-013 |
-| F-009 | Work Queue Items | 🚧 In Umsetzung | Mittel | [spec](feature-F-009-queue-items.md) | F-001, F-008, F-011, F-012, F-013 |
-| F-010 | Audit Events | 🚧 In Umsetzung | Niedrig | [spec](feature-F-010-audit-events.md) | F-001, F-011, F-012, F-013 |
+| F-001 | Database Connection Management | ✔️ Fertig | Hoch | [spec](feature-F-001-db-connection.md) | (Fundament) |
+| F-002 | Session List | ✔️ Fertig | Hoch | [spec](feature-F-002-list-sessions.md) | F-001, F-011, F-012, F-013 |
+| F-003 | Session Details | ✔️ Fertig | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
+| F-004 | Session Log | ✔️ Fertig | Hoch | [spec](feature-F-004-session-log.md) | F-001, F-011, F-012, F-013 |
+| F-005 | Search Errors | ✔️ Fertig | Hoch | [spec](feature-F-005-search-errors.md) | F-001, F-002, F-011, F-012, F-013 |
+| F-006 | Resources | ✔️ Fertig | Mittel | [spec](feature-F-006-resources.md) | F-001, F-011, F-012, F-013 |
+| F-007 | Processes | ✔️ Fertig | Mittel | [spec](feature-F-007-processes.md) | F-001, F-011, F-012, F-013 |
+| F-008 | Work Queues | ✔️ Fertig | Mittel | [spec](feature-F-008-work-queues.md) | F-001, F-011, F-012, F-013 |
+| F-009 | Work Queue Items | ✔️ Fertig | Mittel | [spec](feature-F-009-queue-items.md) | F-001, F-008, F-011, F-012, F-013 |
+| F-010 | Audit Events | ✔️ Fertig | Niedrig | [spec](feature-F-010-audit-events.md) | F-001, F-011, F-012, F-013 |
 | F-011 | Common Filters | ✔️ Fertig | Hoch | [spec](feature-F-011-common-filters.md) | architecture § 4.3, § 4.4, § 4.5, § 5, § 8 |
-| F-012 | Output to File | 🚧 In Umsetzung | **Hoch** (Martin-Vorgabe) | [spec](feature-F-012-output-to-file.md) | F-011, F-013, Skill `dotnet-config-path-anchoring` |
+| F-012 | Output to File | ✔️ Fertig | **Hoch** (Martin-Vorgabe) | [spec](feature-F-012-output-to-file.md) | F-011, F-013, Skill `dotnet-config-path-anchoring` |
 | F-013 | Output Format (jsonl / Table) | ✔️ Fertig | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
-| F-014 | Self-Test & Diagnostics | 🚧 In Umsetzung | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
+| F-014 | Self-Test & Diagnostics | ✔️ Fertig | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 
-**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-006/F-007/F-008/F-009/F-010/F-012/F-014 🚧**. Nächster Fokus: **Rest-Finish + Verifikation + Status auf ✔️**.
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierung ist komplett auf **✔️** abgeschlossen (F-001 bis F-014).
 
 ## Code-Review-Status (2026-10-13)
 

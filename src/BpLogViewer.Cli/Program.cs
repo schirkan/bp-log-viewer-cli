@@ -38,8 +38,11 @@ public static class Program
             var allOptionArgs = globalArgs.Concat(subArgs).ToArray();
             var filters = FilterParser.Parse(allOptionArgs);
 
+            var wantsVersionFlag = args.Any(a => a is "--version" or "-v");
+
             return subCommand switch
             {
+                "" when wantsVersionFlag => VersionCommand.Execute(),
                 "" or "help" or "--help" or "-h" => PrintRootHelp(),
                 "version" or "--version" or "-v" => VersionCommand.Execute(),
                 "self-test" => SelfTestCommand.Execute(filters),
