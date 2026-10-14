@@ -23,6 +23,8 @@ namespace BpLogViewer.Cli.Output;
 [JsonSerializable(typeof(WorkQueueItemInfo))]
 [JsonSerializable(typeof(SessionLogEntry))]
 [JsonSerializable(typeof(SessionErrorAggregate))]
+[JsonSerializable(typeof(ResourceInfo))]
+[JsonSerializable(typeof(ProcessInfo))]
 [JsonSerializable(typeof(OutputWrittenEnvelope))]
 public partial class PayloadJsonContext : JsonSerializerContext
 {

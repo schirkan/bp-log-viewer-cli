@@ -44,8 +44,8 @@
 | F-003 | Session Details | 🚧 In Umsetzung | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
 | F-004 | Session Log | 🚧 In Umsetzung | Hoch | [spec](feature-F-004-session-log.md) | F-001, F-011, F-012, F-013 |
 | F-005 | Search Errors | 🚧 In Umsetzung | Hoch | [spec](feature-F-005-search-errors.md) | F-001, F-002, F-011, F-012, F-013 |
-| F-006 | Resources | ✅ Freigegeben | Mittel | [spec](feature-F-006-resources.md) | F-001, F-011, F-012, F-013 |
-| F-007 | Processes | ✅ Freigegeben | Mittel | [spec](feature-F-007-processes.md) | F-001, F-011, F-012, F-013 |
+| F-006 | Resources | 🚧 In Umsetzung | Mittel | [spec](feature-F-006-resources.md) | F-001, F-011, F-012, F-013 |
+| F-007 | Processes | 🚧 In Umsetzung | Mittel | [spec](feature-F-007-processes.md) | F-001, F-011, F-012, F-013 |
 | F-008 | Work Queues | ✅ Freigegeben | Mittel | [spec](feature-F-008-work-queues.md) | F-001, F-011, F-012, F-013 |
 | F-009 | Work Queue Items | ✅ Freigegeben | Mittel | [spec](feature-F-009-queue-items.md) | F-001, F-008, F-011, F-012, F-013 |
 | F-010 | Audit Events | ✅ Freigegeben | Niedrig | [spec](feature-F-010-audit-events.md) | F-001, F-011, F-012, F-013 |
@@ -54,7 +54,7 @@
 | F-013 | Output Format (jsonl / Table) | ✔️ Fertig | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
 | F-014 | Self-Test & Diagnostics | 🚧 In Umsetzung | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 
-**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-012/F-014 🚧**. Nächste Reihenfolge: **F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-004/F-005/F-006/F-007/F-012/F-014 🚧**. Nächste Reihenfolge: **F-014 fertigziehen → F-008 → F-009 → F-010**.
 
 ## Code-Review-Status (2026-10-13)
 
@@ -101,3 +101,4 @@ Erste code-review-Runde (Skill `code-review`) identifizierte **2 CRITICAL + 8 MA
 | 2026-10-14 | F-003 begonnen: `session get` implementiert (Lookup via Session Number/SessionId, optional `--include-state-xml`, Work-Queue-Items, `session_not_found` mit Exit 10). |
 | 2026-10-14 | F-004/F-005 begonnen: `session log` (Tabellenwahl NonUnicode→Unicode, Filter `--level/--text/--stage`, truncation) und `session errors` (List + `--aggregate` + `--exception-type`) implementiert. |
 | 2026-10-14 | F-012/F-014 weitergezogen: `--output`-Dateischreiben mit Marker (`output_written`, `row_count`, `bytes`) inkl. Root-Anker/Traversal-Block (Exit 6); `self-test` um BP-Version, Tabellencheck, aktive Log-Tabelle und Write-Test erweitert. |
+| 2026-10-14 | F-006/F-007 begonnen: `resource list` und `process list` implementiert (inkl. JOIN/Window-Aggregationen, Filter, truncation und Output-to-File). |

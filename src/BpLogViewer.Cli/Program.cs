@@ -44,8 +44,8 @@ public static class Program
                 "version" or "--version" or "-v" => VersionCommand.Execute(),
                 "self-test" => SelfTestCommand.Execute(filters),
                 "session" => DispatchSession(subArgs, filters),
-                "resource" => DispatchResource(subArgs),
-                "process" => DispatchProcess(subArgs),
+                "resource" => DispatchResource(subArgs, filters),
+                "process" => DispatchProcess(subArgs, filters),
                 "queue" => DispatchQueue(subArgs),
                 "audit" => DispatchAudit(subArgs),
                 _ => UnknownCommand(subCommand)
@@ -119,7 +119,7 @@ public static class Program
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001/F-002/F-003/F-004/F-005 🚧.");
+        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001..F-007 🚧.");
         return 0;
     }
 
@@ -156,8 +156,33 @@ public static class Program
         };
     }
 
-    private static int DispatchResource(string[] _) => NotYetImplemented("resource", "F-006");
-    private static int DispatchProcess(string[] _) => NotYetImplemented("process", "F-007");
+    private static int DispatchResource(string[] subArgs, FilterSet filters)
+    {
+        if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
+        {
+            return NotYetImplemented("resource", "F-006");
+        }
+
+        return subArgs[0] switch
+        {
+            "list" => ResourceListCommand.Execute(subArgs.Skip(1).ToArray(), filters),
+            _ => UnknownCommand($"resource {subArgs[0]}")
+        };
+    }
+
+    private static int DispatchProcess(string[] subArgs, FilterSet filters)
+    {
+        if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
+        {
+            return NotYetImplemented("process", "F-007");
+        }
+
+        return subArgs[0] switch
+        {
+            "list" => ProcessListCommand.Execute(subArgs.Skip(1).ToArray(), filters),
+            _ => UnknownCommand($"process {subArgs[0]}")
+        };
+    }
     private static int DispatchQueue(string[] _) => NotYetImplemented("queue", "F-008, F-009");
     private static int DispatchAudit(string[] _) => NotYetImplemented("audit", "F-010");
 }
