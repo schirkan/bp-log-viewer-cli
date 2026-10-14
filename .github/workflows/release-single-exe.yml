@@ -31,6 +31,11 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
+      - name: Prepare appsettings for CI build
+        shell: pwsh
+        run: |
+          Copy-Item appsettings.template.json src/BpLogViewer.Cli/appsettings.json -Force
+
       - name: Restore
         run: dotnet restore src/BpLogViewer.Cli/BpLogViewer.Cli.csproj
 
