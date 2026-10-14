@@ -28,7 +28,7 @@
 - **code-review 2026-10-13 abgeschlossen** (Skill `code-review`, 2 CRITICAL + 8 MAJOR + 7 MINOR + 5 NIT). Alle CRITICAL + MAJOR-Blocker in derselben Session gefixt. MINOR-Items in `## Blocker → Implementation-Notes` überführt.
 - Lizenz: **MIT** (`LICENSE`, README-Badge).
 - **Alle 14 Specs ✅ Freigegeben** (Martin-Abnahme 2026-10-13 21:47).
-- Implementierungsstand: F-013 ✔️, F-011 ✔️, F-001/F-002/F-014 🚧.
+- Implementierungsstand: F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-014 🚧.
 - Git-Repo: **eingerichtet** (siehe `## Git`).
 - Workboard: **bewusst nicht verwendet** (siehe ⚠️ oben).
 
@@ -48,7 +48,7 @@
 |:---|:------|:----------|:-------|
 | F-001 | Database Connection Management | Hoch | 🚧 |
 | F-002 | Session List | Hoch | 🚧 |
-| F-003 | Session Details | Hoch | ✅ |
+| F-003 | Session Details | Hoch | 🚧 |
 | F-004 | Session Log | Hoch | ✅ |
 | F-005 | Search Errors | Hoch | ✅ |
 | F-006 | Resources | Mittel | ✅ |
@@ -146,4 +146,5 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-13 | **Blocker #1** (Spec-Review) erledigt — Martin-Abnahme „Specs ok" 2026-10-13 21:47. Alle 14 Specs auf ✅ Freigegeben. |
 | 2026-10-13 | **Implementierung gestartet** — Fundament-Reihenfolge: F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010. |
 | 2026-10-14 | Weiterbau: F-011 Parser/Validierung stabilisiert, `self-test` (F-001/F-014-Teil) aktiv mit DB-Connect/StatusCache, `session list` (F-002) gegen `BPVSessionInfo` lauffähig mit jsonl-Output. |
+| 2026-10-14 | F-003 gestartet: `session get` implementiert (Suche per Session-Nr./UUID, optional `--include-state-xml`, Queue-Items + truncation-Flag, Exit 10 bei nicht gefunden). |
 | 2026-10-14 | Release-Pipeline ergänzt: `.github/workflows/release-single-exe.yml` baut bei Tag `v*` ein self-contained single-file `win-x64`-Artefakt, packt ZIP + SHA256 und veröffentlicht als GitHub Release Asset. |

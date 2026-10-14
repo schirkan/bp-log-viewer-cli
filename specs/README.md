@@ -41,7 +41,7 @@
 |:---|:------|:-------|:----------|:-----|:---------------|
 | F-001 | Database Connection Management | 🚧 In Umsetzung | Hoch | [spec](feature-F-001-db-connection.md) | (Fundament) |
 | F-002 | Session List | 🚧 In Umsetzung | Hoch | [spec](feature-F-002-list-sessions.md) | F-001, F-011, F-012, F-013 |
-| F-003 | Session Details | ✅ Freigegeben | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
+| F-003 | Session Details | 🚧 In Umsetzung | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
 | F-004 | Session Log | ✅ Freigegeben | Hoch | [spec](feature-F-004-session-log.md) | F-001, F-011, F-012, F-013 |
 | F-005 | Search Errors | ✅ Freigegeben | Hoch | [spec](feature-F-005-search-errors.md) | F-001, F-002, F-011, F-012, F-013 |
 | F-006 | Resources | ✅ Freigegeben | Mittel | [spec](feature-F-006-resources.md) | F-001, F-011, F-012, F-013 |
@@ -54,7 +54,7 @@
 | F-013 | Output Format (jsonl / Table) | ✔️ Fertig | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
 | F-014 | Self-Test & Diagnostics | 🚧 In Umsetzung | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 
-**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-014 🚧**. Nächste Reihenfolge: **F-003 → F-004 → F-005 → F-012 → F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-003/F-014 🚧**. Nächste Reihenfolge: **F-004 → F-005 → F-012 → F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
 
 ## Code-Review-Status (2026-10-13)
 
@@ -98,3 +98,4 @@ Erste code-review-Runde (Skill `code-review`) identifizierte **2 CRITICAL + 8 MA
 | 2026-10-13 | **Blocker #3** `appsettings.template.json` angelegt (versioniert; in Implementation kopieren und Connection-String eintragen). |
 | 2026-10-13 | **Martin-Abnahme** aller 14 Specs („Specs ok" 2026-10-13 21:47) — alle Status von 📋 auf ✅. Implementierung startet. |
 | 2026-10-14 | Implementierung fortgeführt: F-011 Common Filters stabilisiert (Validation + Exit-Codes), F-001-Teile für `self-test` (Config/LocalDB/DB/StatusCache) aktiv, F-002 `session list` gegen `BPVSessionInfo` mit jsonl-Output und Statusauflösung umgesetzt. |
+| 2026-10-14 | F-003 begonnen: `session get` implementiert (Lookup via Session Number/SessionId, optional `--include-state-xml`, Work-Queue-Items, `session_not_found` mit Exit 10). |
