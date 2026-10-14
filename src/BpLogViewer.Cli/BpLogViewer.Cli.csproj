@@ -18,19 +18,48 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+    <!--
+      Release-Optimierungen für minimale Binary-Größe.
+      - InvariantGlobalization: spart ICU/全球化-Daten (~1–2 MB).
+      - PublishSingleFile + SelfContained + PublishTrimmed + IncludeNativeLibrariesForSelfExtract:
+        eine einzige .exe, ohne .NET-Runtime auf dem Zielsystem vorauszusetzen.
+      - DebugType=None / DebugSymbols=false: keine PDBs, keine Source-Info.
+      Diese Properties sind im .csproj zentral, damit `dotnet publish` ohne
+      zusätzliche -p:-Flags die Release-Binary erzeugt.
+    -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <PublishTrimmed>true</PublishTrimmed>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>None</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <!--
+      Trim-Warnings sind Library-internal (SqlClient SNI, Azure.Core,
+      IdentityModel) und nicht durch unsere App-Code-Patterns verursacht.
+      Wir nutzen JsonTypeInfo-Source-Generator und vermeiden Reflection,
+      die wenigen Reflection-Stellen in System.Data.DataSet/DataTable
+      (XmlSchema) werden nicht von uns aufgerufen.
+    -->
+    <NoWarn>$(NoWarn);IL2026;IL2104</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <!--
+      Bewusst schlank gehalten: nur die Pakete, die wir wirklich nutzen.
+      Entfernt wurden (brachten ~1–2 MB ohne Verwendung):
+      - Microsoft.Extensions.DependencyInjection (wir nutzen kein DI-Container)
+      - Microsoft.Extensions.Hosting (kein Host-Setup)
+      - Microsoft.Extensions.Logging / Logging.Console (kein ILogger)
+      - System.CommandLine (manueller Dispatcher, Migration zurück ist
+        später mit Add-Package möglich; siehe Notiz in Program.cs)
+    -->
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="8.0.0" />
   </ItemGroup>
 
   <!--
@@ -42,6 +71,20 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <!--
+    Microsoft.Data.SqlClient bringt beim selbst-enthaltenden Publish den
+    Native-SNI-Provider und den TDS-Handler mit. Wir nutzen nur den
+    SqlClient-ADO.NET-Pfad (kein TDS, kein Azure-Auth-Code, kein Identity-
+    Broker). TrimmerRootAssembly sichert die Reflection-Pfade ab, die
+    SqlClient intern nutzt (Connection-String-Parser, Type-Mapping).
+    Ohne diese Sicherung würde PublishTrimmed die SNI-DLL und ein paar
+    interne Helper wegtrimmen und `SqlConnection.Open` würde zur Laufzeit
+    mit MissingMethodException fehlschlagen.
+  -->
+  <ItemGroup>
+    <TrimmerRootAssembly Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
 </Project>
