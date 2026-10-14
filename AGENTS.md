@@ -40,6 +40,7 @@
 - **Eingerichtet am:** 2026-10-13 (lokal + GitHub-Remote)
 - **`.gitignore`-Status:** vorhanden
 - **Standard-Branch:** `main`
+- **GitHub Release Workflow:** `.github/workflows/release-single-exe.yml` (Tag `v*` → single EXE + ZIP + SHA256 + Release-Assets)
 
 ## Spec-Übersicht (Kurzfassung)
 
@@ -145,3 +146,4 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-13 | **Blocker #1** (Spec-Review) erledigt — Martin-Abnahme „Specs ok" 2026-10-13 21:47. Alle 14 Specs auf ✅ Freigegeben. |
 | 2026-10-13 | **Implementierung gestartet** — Fundament-Reihenfolge: F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010. |
 | 2026-10-14 | Weiterbau: F-011 Parser/Validierung stabilisiert, `self-test` (F-001/F-014-Teil) aktiv mit DB-Connect/StatusCache, `session list` (F-002) gegen `BPVSessionInfo` lauffähig mit jsonl-Output. |
+| 2026-10-14 | Release-Pipeline ergänzt: `.github/workflows/release-single-exe.yml` baut bei Tag `v*` ein self-contained single-file `win-x64`-Artefakt, packt ZIP + SHA256 und veröffentlicht als GitHub Release Asset. |

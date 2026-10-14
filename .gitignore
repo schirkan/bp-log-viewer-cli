@@ -28,6 +28,7 @@ artifacts/
 ## Publish
 publish/
 dist/
+out/
 
 ## Secrets — must NOT be versioned
 appsettings.json

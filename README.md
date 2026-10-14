@@ -41,6 +41,37 @@ All sub-commands emit jsonl on stdout, errors and warnings on stderr.
 
 See [`specs/architecture.md`](specs/architecture.md) for the full picture.
 
+## Publish (Single EXE)
+
+Lokaler Publish (Windows, self-contained, single-file, trimmed):
+
+```bash
+dotnet publish src/BpLogViewer.Cli/BpLogViewer.Cli.csproj \
+  -c Release \
+  -r win-x64 \
+  --self-contained true \
+  -p:PublishSingleFile=true \
+  -p:PublishTrimmed=true \
+  -p:IncludeNativeLibrariesForSelfExtract=true \
+  -o out/win-x64
+```
+
+Artefakt: `out/win-x64/bp-log-viewer.exe`
+
+## GitHub Release Build Flow
+
+Workflow: `.github/workflows/release-single-exe.yml`
+
+Trigger:
+- Tag-Push `v*` (z. B. `v0.2.0`)
+- optional manuell via `workflow_dispatch`
+
+Ablauf:
+1. Restore + Build (`Release`)
+2. Publish als single-file EXE (`win-x64`, self-contained, trimmed)
+3. ZIP + SHA256 erzeugen
+4. GitHub Release erstellen/aktualisieren und beide Dateien anhängen
+
 ## Documentation
 
 | File | Purpose |
