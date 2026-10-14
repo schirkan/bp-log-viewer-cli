@@ -142,11 +142,11 @@ public static class SelfTestCommand
         {
             using var conn = new SqlConnection(settings.Database.ConnectionString);
             conn.Open();
-            using var cmd = new SqlCommand("SELECT TOP 1 versionno FROM BPADBVersion ORDER BY installeddate DESC", conn);
+            using var cmd = new SqlCommand("SELECT TOP 1 dbversion FROM BPADBVersion ORDER BY scriptrundate DESC", conn);
             var dbValue = cmd.ExecuteScalar()?.ToString();
             if (!string.IsNullOrWhiteSpace(dbValue))
             {
-                return ("ok", dbValue, "db", "version from BPADBVersion");
+                return ("ok", dbValue, "db", "db schema version from BPADBVersion");
             }
         }
         catch
