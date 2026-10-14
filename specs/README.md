@@ -39,8 +39,8 @@
 
 | ID | Titel | Status | Priorität | Spec | Abhängigkeiten |
 |:---|:------|:-------|:----------|:-----|:---------------|
-| F-001 | Database Connection Management | ✅ Freigegeben | Hoch | [spec](feature-F-001-db-connection.md) | (Fundament) |
-| F-002 | Session List | ✅ Freigegeben | Hoch | [spec](feature-F-002-list-sessions.md) | F-001, F-011, F-012, F-013 |
+| F-001 | Database Connection Management | 🚧 In Umsetzung | Hoch | [spec](feature-F-001-db-connection.md) | (Fundament) |
+| F-002 | Session List | 🚧 In Umsetzung | Hoch | [spec](feature-F-002-list-sessions.md) | F-001, F-011, F-012, F-013 |
 | F-003 | Session Details | ✅ Freigegeben | Hoch | [spec](feature-F-003-session-details.md) | F-001, F-011, F-012, F-013 |
 | F-004 | Session Log | ✅ Freigegeben | Hoch | [spec](feature-F-004-session-log.md) | F-001, F-011, F-012, F-013 |
 | F-005 | Search Errors | ✅ Freigegeben | Hoch | [spec](feature-F-005-search-errors.md) | F-001, F-002, F-011, F-012, F-013 |
@@ -49,12 +49,12 @@
 | F-008 | Work Queues | ✅ Freigegeben | Mittel | [spec](feature-F-008-work-queues.md) | F-001, F-011, F-012, F-013 |
 | F-009 | Work Queue Items | ✅ Freigegeben | Mittel | [spec](feature-F-009-queue-items.md) | F-001, F-008, F-011, F-012, F-013 |
 | F-010 | Audit Events | ✅ Freigegeben | Niedrig | [spec](feature-F-010-audit-events.md) | F-001, F-011, F-012, F-013 |
-| F-011 | Common Filters | ✅ Freigegeben | Hoch | [spec](feature-F-011-common-filters.md) | architecture § 4.3, § 4.4, § 4.5, § 5, § 8 |
+| F-011 | Common Filters | ✔️ Fertig | Hoch | [spec](feature-F-011-common-filters.md) | architecture § 4.3, § 4.4, § 4.5, § 5, § 8 |
 | F-012 | Output to File | ✅ Freigegeben | **Hoch** (Martin-Vorgabe) | [spec](feature-F-012-output-to-file.md) | F-011, F-013, Skill `dotnet-config-path-anchoring` |
-| F-013 | Output Format (jsonl / Table) | ✅ Freigegeben | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
-| F-014 | Self-Test & Diagnostics | ✅ Freigegeben | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
+| F-013 | Output Format (jsonl / Table) | ✔️ Fertig | Hoch | [spec](feature-F-013-output-format.md) | Skill `dotnet-trimmed-binary-json-fix` |
+| F-014 | Self-Test & Diagnostics | 🚧 In Umsetzung | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 
-**Zusammenfassung:** 14 Specs alle ✅ Freigegeben (Martin-Abnahme 2026-10-13). Implementierungs-Reihenfolge: **F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010**.
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierungsstand: **F-013 ✔️, F-011 ✔️, F-001/F-002/F-014 🚧**. Nächste Reihenfolge: **F-003 → F-004 → F-005 → F-012 → F-014 fertigziehen → F-006 → F-007 → F-008 → F-009 → F-010**.
 
 ## Code-Review-Status (2026-10-13)
 
@@ -97,3 +97,4 @@ Erste code-review-Runde (Skill `code-review`) identifizierte **2 CRITICAL + 8 MA
 | 2026-10-13 | **n4** `.gitattributes` für konsistente Line-Endings. |
 | 2026-10-13 | **Blocker #3** `appsettings.template.json` angelegt (versioniert; in Implementation kopieren und Connection-String eintragen). |
 | 2026-10-13 | **Martin-Abnahme** aller 14 Specs („Specs ok" 2026-10-13 21:47) — alle Status von 📋 auf ✅. Implementierung startet. |
+| 2026-10-14 | Implementierung fortgeführt: F-011 Common Filters stabilisiert (Validation + Exit-Codes), F-001-Teile für `self-test` (Config/LocalDB/DB/StatusCache) aktiv, F-002 `session list` gegen `BPVSessionInfo` mit jsonl-Output und Statusauflösung umgesetzt. |

@@ -1,6 +1,7 @@
 using BpLogViewer.Cli.Commands;
 using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
+using FilterSet = BpLogViewer.Cli.Filters.Filters;
 
 namespace BpLogViewer.Cli;
 
@@ -31,15 +32,18 @@ public static class Program
             // Split: globale Optionen (vor Sub-Command) | Sub-Command | Sub-Command-Args
             var (subCommand, globalArgs, subArgs) = SplitArgs(args);
 
-            // Validiere alle globalen Optionen + Filter (F-011). Wirft FilterValidationException.
-            var filters = FilterParser.Parse(globalArgs);
+            // F-011: globale Filter/Optionen validieren.
+            // Zusätzlich parse über subArgs, damit globale Optionen auch hinter dem Command
+            // funktionieren (z. B. "version --since ...").
+            var allOptionArgs = globalArgs.Concat(subArgs).ToArray();
+            var filters = FilterParser.Parse(allOptionArgs);
 
             return subCommand switch
             {
                 "" or "help" or "--help" or "-h" => PrintRootHelp(),
                 "version" or "--version" or "-v" => VersionCommand.Execute(),
                 "self-test" => SelfTestCommand.Execute(filters),
-                "session" => DispatchSession(subArgs),
+                "session" => DispatchSession(subArgs, filters),
                 "resource" => DispatchResource(subArgs),
                 "process" => DispatchProcess(subArgs),
                 "queue" => DispatchQueue(subArgs),
@@ -65,13 +69,32 @@ public static class Program
     /// </summary>
     private static (string subCommand, string[] globalArgs, string[] subArgs) SplitArgs(string[] args)
     {
+        // Globale Optionen mit Value dürfen nicht als Sub-Command interpretiert werden.
+        // Beispiel: --max-rows 1000 version
+        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
+        {
+            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
+            "--max-rows", "--format", "--output", "--out-file", "--connection-string"
+        };
+
         for (int i = 0; i < args.Length; i++)
         {
-            if (!args[i].StartsWith("--") && !args[i].StartsWith("-"))
+            var token = args[i];
+            if (optionsWithValue.Contains(token))
             {
-                return (args[i], args[..i], args[(i + 1)..]);
+                i++; // zugehörigen Wert überspringen
+                continue;
             }
+
+            if (token.StartsWith("-", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return (token, args[..i], args[(i + 1)..]);
         }
+
+        // Kein Sub-Command — alle Args sind global
         return ("", args, Array.Empty<string>());
     }
 
@@ -96,7 +119,7 @@ public static class Program
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Status: F-013 ✅ · F-014 version ✅ · F-011 Common Filters ✅ · F-001 DB Connection (in Arbeit)");
+        Console.Error.WriteLine("Status: Specs ✅ freigegeben. Implementation: F-013 ✅ · F-011 ✅ · F-001 🚧 · F-002 🚧.");
         return 0;
     }
 
@@ -105,7 +128,7 @@ public static class Program
         ErrorWriter.WriteErrorAsync(
             "not_implemented",
             $"Command '{command}' ist in der Spec ({spec}) definiert, aber noch nicht implementiert. " +
-            "Folge-Reihenfolge: F-002 → F-003 → F-004 → F-005 → F-012 → F-006 → F-007 → F-008 → F-009 → F-010.",
+            "Folge-Reihenfolge: F-003 → F-004 → F-005 → F-012 → F-006 → F-007 → F-008 → F-009 → F-010.",
             0).GetAwaiter().GetResult();
         return 0;
     }
@@ -116,7 +139,23 @@ public static class Program
         return 11;
     }
 
-    private static int DispatchSession(string[] _) => NotYetImplemented("session", "F-002..F-005");
+    private static int DispatchSession(string[] subArgs, FilterSet filters)
+    {
+        if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
+        {
+            return NotYetImplemented("session", "F-002..F-005");
+        }
+
+        return subArgs[0] switch
+        {
+            "list" => SessionListCommand.Execute(filters),
+            "get" => NotYetImplemented("session get", "F-003"),
+            "log" => NotYetImplemented("session log", "F-004"),
+            "errors" => NotYetImplemented("session errors", "F-005"),
+            _ => UnknownCommand($"session {subArgs[0]}")
+        };
+    }
+
     private static int DispatchResource(string[] _) => NotYetImplemented("resource", "F-006");
     private static int DispatchProcess(string[] _) => NotYetImplemented("process", "F-007");
     private static int DispatchQueue(string[] _) => NotYetImplemented("queue", "F-008, F-009");

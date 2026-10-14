@@ -23,11 +23,12 @@
 
 - Spezifikations-Phase abgeschlossen (Martin-Vorgabe 2026-10-02).
 - Architektur dokumentiert in `specs/architecture.md` (Tech-Stack, Layout, Konfiguration, Fehlerbehandlung, Deployment, Timezone-Policy § 4.4, Status-Convention § 4.5).
-- 14 Feature-Specs angelegt (F-001 bis F-014), alle im Status 📋 Entwurf.
+- 14 Feature-Specs angelegt (F-001 bis F-014), alle von Martin freigegeben (✅).
 - DB- und Installations-Befunde dokumentiert in `context/`.
 - **code-review 2026-10-13 abgeschlossen** (Skill `code-review`, 2 CRITICAL + 8 MAJOR + 7 MINOR + 5 NIT). Alle CRITICAL + MAJOR-Blocker in derselben Session gefixt. MINOR-Items in `## Blocker → Implementation-Notes` überführt.
 - Lizenz: **MIT** (`LICENSE`, README-Badge).
-- **Alle 14 Specs ✅ Freigegeben** (Martin-Abnahme 2026-10-13 21:47). Implementierung startet.
+- **Alle 14 Specs ✅ Freigegeben** (Martin-Abnahme 2026-10-13 21:47).
+- Implementierungsstand: F-013 ✔️, F-011 ✔️, F-001/F-002/F-014 🚧.
 - Git-Repo: **eingerichtet** (siehe `## Git`).
 - Workboard: **bewusst nicht verwendet** (siehe ⚠️ oben).
 
@@ -44,8 +45,8 @@
 
 | ID | Titel | Priorität | Status |
 |:---|:------|:----------|:-------|
-| F-001 | Database Connection Management | Hoch | ✅ |
-| F-002 | Session List | Hoch | ✅ |
+| F-001 | Database Connection Management | Hoch | 🚧 |
+| F-002 | Session List | Hoch | 🚧 |
 | F-003 | Session Details | Hoch | ✅ |
 | F-004 | Session Log | Hoch | ✅ |
 | F-005 | Search Errors | Hoch | ✅ |
@@ -54,10 +55,10 @@
 | F-008 | Work Queues | Mittel | ✅ |
 | F-009 | Work Queue Items | Mittel | ✅ |
 | F-010 | Audit Events | Niedrig | ✅ |
-| F-011 | Common Filters | Hoch | ✅ |
+| F-011 | Common Filters | Hoch | ✔️ |
 | F-012 | Output to File | **Hoch** (Martin-Vorgabe) | ✅ |
-| F-013 | Output Format (jsonl / Table) | Hoch | ✅ |
-| F-014 | Self-Test & Diagnostics | Mittel | ✅ |
+| F-013 | Output Format (jsonl / Table) | Hoch | ✔️ |
+| F-014 | Self-Test & Diagnostics | Mittel | 🚧 |
 
 Vollständige Tabelle mit Abhängigkeiten: `specs/README.md` § Status-Übersicht.
 
@@ -143,3 +144,4 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-13 | **Blocker #2** (GitHub-Repo) + **#3** (`appsettings.template.json`) erledigt. |
 | 2026-10-13 | **Blocker #1** (Spec-Review) erledigt — Martin-Abnahme „Specs ok" 2026-10-13 21:47. Alle 14 Specs auf ✅ Freigegeben. |
 | 2026-10-13 | **Implementierung gestartet** — Fundament-Reihenfolge: F-013 → F-011 → F-001 → F-002 → F-003 → F-004 → F-005 → F-012 → F-014 → F-006 → F-007 → F-008 → F-009 → F-010. |
+| 2026-10-14 | Weiterbau: F-011 Parser/Validierung stabilisiert, `self-test` (F-001/F-014-Teil) aktiv mit DB-Connect/StatusCache, `session list` (F-002) gegen `BPVSessionInfo` lauffähig mit jsonl-Output. |

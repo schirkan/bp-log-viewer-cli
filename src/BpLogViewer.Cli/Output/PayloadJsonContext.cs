@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using BpLogViewer.Cli.Commands;
+using BpLogViewer.Cli.Models;
 
 namespace BpLogViewer.Cli.Output;
 
@@ -17,6 +18,7 @@ namespace BpLogViewer.Cli.Output;
 [JsonSerializable(typeof(ErrorEnvelope))]
 [JsonSerializable(typeof(WarningEnvelope))]
 [JsonSerializable(typeof(VersionInfo))]
+[JsonSerializable(typeof(SessionInfo))]
 public partial class PayloadJsonContext : JsonSerializerContext
 {
 }

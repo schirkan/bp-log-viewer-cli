@@ -1,10 +1,7 @@
 namespace BpLogViewer.Cli.Filters;
 
 /// <summary>
-/// Aggregated global options + filters from CLI args and ENV. See
-/// <c>specs/feature-F-011-common-filters.md</c> and <c>specs/architecture.md § 5</c>.
-/// Werte sind nullable, wenn nicht gesetzt; Sub-Commands entscheiden selbst,
-/// welche Filter sie anwenden.
+/// Aggregated global options + filters. Spec: <c>specs/feature-F-011-common-filters.md</c>.
 /// </summary>
 public sealed record Filters(
     DateTimeOffset? Since,
@@ -33,12 +30,8 @@ public sealed record Filters(
     public static Filters Empty { get; } = new(
         Since: null, Until: null, Process: null, Resource: null,
         Status: null, HasException: false, Level: null, Text: null,
-        MaxRows: null, Verbose: false,
-        Format: null, Output: null, ConnectionString: null);
+        MaxRows: null, Verbose: false, Format: null, Output: null, ConnectionString: null);
 
-    /// <summary>Aufgelöster <c>--max-rows</c>-Wert: Argument oder Default.</summary>
     public int EffectiveMaxRows => MaxRows ?? DefaultMaxRows;
-
-    /// <summary>Aufgelöstes Format: Argument oder Default (jsonl).</summary>
     public string EffectiveFormat => Format ?? DefaultFormat;
 }
