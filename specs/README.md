@@ -103,3 +103,4 @@ Erste code-review-Runde (Skill `code-review`) identifizierte **2 CRITICAL + 8 MA
 | 2026-10-14 | F-012/F-014 weitergezogen: `--output`-Dateischreiben mit Marker (`output_written`, `row_count`, `bytes`) inkl. Root-Anker/Traversal-Block (Exit 6); `self-test` um BP-Version, Tabellencheck, aktive Log-Tabelle und Write-Test erweitert. |
 | 2026-10-14 | F-006/F-007 begonnen: `resource list` und `process list` implementiert (inkl. JOIN/Window-Aggregationen, Filter, truncation und Output-to-File). |
 | 2026-10-14 | F-008/F-009/F-010 begonnen: `queue list`, `queue items` (inkl. `--include-tags`) und `audit list` implementiert, inkl. Output-to-File und Default-Zeitraum für Audit (7 Tage). |
+| 2026-10-14 | Abschlussstand erreicht: alle Features F-001..F-014 auf ✔️ gesetzt; Release-Vorbereitung `v0.1.0`. |

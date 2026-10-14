@@ -4,9 +4,7 @@ Structured, AI-optimized console interface for the Blue Prism database (7.5.x).
 Direct DB access for error analysis and root cause research — without the slow
 official BP CLI.
 
-> **Status:** 📋 Specification phase. 14 feature specs tracked in
-> [`specs/README.md`](specs/README.md). Implementation starts after Martin signs
-> off the specs.
+> **Status:** ✔️ Implementiert (Specs F-001 … F-014 umgesetzt).
 
 ## License
 
@@ -19,27 +17,49 @@ queries the Blue Prism SQL Server / LocalDB directly and emits results as
 [JSON Lines](https://jsonlines.org/) (jsonl) on stdout — one JSON object per
 line, ready for AI agents or `jq` to consume.
 
-## Quick start (post-implementation)
+## Quick start
 
 ```bash
-bp-log-viewer self-test                          # sanity check (config, DB, tables)
-bp-log-viewer session list --since 2026-10-01    # recent sessions
-bp-log-viewer session log 4711                   # log of a session
-bp-log-viewer session log 4711 --output big.json # large logs → file
-bp-log-viewer session errors --aggregate         # root-cause research
+bp-log-viewer --version
+bp-log-viewer self-test
+bp-log-viewer session list --max-rows 50
+bp-log-viewer session get 4711
+bp-log-viewer session log 4711 --level error --max-rows 200
+bp-log-viewer session errors --aggregate --since 2026-10-01T00:00:00Z
+bp-log-viewer resource list
+bp-log-viewer process list --has-errors-since 2026-10-01T00:00:00Z
+bp-log-viewer queue list
+bp-log-viewer queue items "MyQueue" --include-tags
+bp-log-viewer audit list --code RESSTART
 ```
 
-All sub-commands emit jsonl on stdout, errors and warnings on stderr.
+Alle Commands geben standardmäßig **jsonl** auf stdout aus; Warnings/Errors gehen als jsonl auf stderr.
 
-## Architecture
+## Command overview
+
+- `version` / `--version`
+- `self-test`
+- `session list|get|log|errors`
+- `resource list`
+- `process list`
+- `queue list|items`
+- `audit list`
+
+Globale Optionen (Auszug):
+- `--connection-string`
+- `--output` / `--out-file`
+- `--max-rows`
+- `--since` / `--until`
+- `--process` / `--resource` / `--status`
+- `--text`
+
+## Architektur (Kurzfassung)
 
 - **Runtime:** .NET 8 self-contained single-file trimmed, win-x64
-- **DB driver:** `Microsoft.Data.SqlClient` 5.x against `BPASession*` tables and `BPV*` views
-- **JSON:** `System.Text.Json` with source generator (trim-safe)
-- **CLI parser:** `System.CommandLine`
-- **Path resolution:** central `PathResolver` anchored on `AppContext.BaseDirectory` (the AI agent spawns the binary with a foreign CWD)
-
-See [`specs/architecture.md`](specs/architecture.md) for the full picture.
+- **DB driver:** `Microsoft.Data.SqlClient` 5.x (`BPA*`, `BPV*`)
+- **JSON:** `System.Text.Json` + Source Generator
+- **CLI parsing:** manueller Dispatcher (System.CommandLine-Workaround)
+- **Path resolution:** `PathResolver` auf Basis `AppContext.BaseDirectory`
 
 ## Publish (Single EXE)
 
@@ -63,7 +83,7 @@ Artefakt: `out/win-x64/bp-log-viewer.exe`
 Workflow: `.github/workflows/release-single-exe.yml`
 
 Trigger:
-- Tag-Push `v*` (z. B. `v0.2.0`)
+- Tag-Push `v*` (z. B. `v0.1.0`)
 - optional manuell via `workflow_dispatch`
 
 Ablauf:

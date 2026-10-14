@@ -151,4 +151,5 @@ Detail-Begründungen in den jeweiligen Spec-Dateien (`## Implementation Notes`).
 | 2026-10-14 | F-012/F-014 erweitert: Output-to-File (`--output`) mit Marker-Response + Pfadschutz (Traversal-Block), `self-test` um BP-Version, Tabellen-Check, aktive Log-Tabelle und Write-Test ergänzt. |
 | 2026-10-14 | F-006/F-007 gestartet: `resource list` und `process list` implementiert (Filter, Aggregationen, truncation, `--output`). |
 | 2026-10-14 | F-008/F-009/F-010 gestartet: `queue list`, `queue items` und `audit list` implementiert (inkl. Output-to-File, `--include-tags`, Audit-Default letzte 7 Tage). |
+| 2026-10-14 | Abschlussstand: alle Specs F-001..F-014 auf ✔️, finale Verifikation grün. |
 | 2026-10-14 | Release-Pipeline ergänzt: `.github/workflows/release-single-exe.yml` baut bei Tag `v*` ein self-contained single-file `win-x64`-Artefakt, packt ZIP + SHA256 und veröffentlicht als GitHub Release Asset. |
