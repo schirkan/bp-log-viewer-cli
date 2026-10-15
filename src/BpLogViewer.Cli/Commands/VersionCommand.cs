@@ -35,7 +35,7 @@ public static class VersionCommand
             TargetFramework: "net8.0",
             Runtime: RuntimeInformation.RuntimeIdentifier);
 
-        var json = JsonSerializer.Serialize(info, PayloadJsonContext.Default.VersionInfo);
+        var json = JsonSerializer.Serialize(info, PayloadJsonContext.Readable.VersionInfo);
         Console.WriteLine(json);
         return 0;
     }

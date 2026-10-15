@@ -103,6 +103,6 @@ Zusätzlich vorhanden, aber leer: `MSSQLLocalDB` (nur System-DB).
 
 1. **Connection-String kommt nicht aus Config/Registry der BP-Installation** — der BP Log Viewer CLI braucht eine eigene Konfiguration (`appsettings.json`).
 2. **Auth ist Windows Integrated** — beim Spawn durch den KI-Agent (MCP-Host, läuft als `OPENCLAWPC\Admin`) funktioniert die Authentifizierung ohne Passwort.
-3. **LocalDB muss laufen** — der BP Log Viewer CLI muss die Instanz bei Bedarf starten können, oder im Fehlerfall darauf hinweisen.
+3. **LocalDB-Verbindung** — die Instanz wird ausschließlich über den Connection-String angesprochen. Die CLI führt kein `sqllocaldb start` aus; bei fehlgeschlagener Verbindung meldet sie den SQL-Fehler.
 4. **Pfad-Anchoring zwingend** — der KI-Agent spawnt die Binary aus einem fremden CWD; relative `--output`-Pfade MÜSSEN gegen `AppContext.BaseDirectory` aufgelöst werden, sonst landet die Auslagerung in einem falschen Verzeichnis (siehe `dotnet-config-path-anchoring`-Skill).
-5. **Self-contained single-file trimmed** — `dotnet publish -p:PublishSingleFile=true -p:PublishTrimmed=true` für Distribution; JSON-Pfade brauchen Source-Generator (siehe `dotnet-trimmed-binary-json-fix`-Skill).
+5. **Framework-dependent single-file** — `dotnet publish --self-contained false -p:PublishSingleFile=true -p:PublishTrimmed=false` für Distribution; .NET-8-Runtime (x64) auf dem Zielsystem erforderlich. Globalisierung bleibt aktiv, Trimming ist wegen SqlClient-TLS-Kompatibilität deaktiviert.

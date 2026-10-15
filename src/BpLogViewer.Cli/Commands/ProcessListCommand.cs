@@ -32,7 +32,7 @@ public static class ProcessListCommand
             var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.List(name, nameContains, type, hasErrorsSince, effectiveMax + 1);
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.ProcessInfo, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.ProcessInfo, filters, truncated);
         }
         catch (Exception ex)
         {

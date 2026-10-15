@@ -26,11 +26,6 @@ public static class SelfTestCommand
         Console.WriteLine($"{{\"step\":\"config\",\"status\":\"{configStatus}\",\"detail\":\"{Escape(configMsg)}\"}}");
         if (configStatus != "ok") return 3;
 
-        var (localdbStatus, localdbMsg) = StartLocalDbIfNeeded(settings);
-        Console.WriteLine($"{{\"step\":\"localdb\",\"status\":\"{localdbStatus}\",\"detail\":\"{Escape(localdbMsg)}\"}}");
-        if (localdbStatus == "start_failed") return 4;
-        if (localdbStatus is "not_configured" or "not_running") degraded = true;
-
         var (dbStatus, dbMsg, dbVersion) = TryConnect(settings);
         Console.WriteLine($"{{\"step\":\"db_connect\",\"status\":\"{dbStatus}\",\"db_version\":\"{Escape(dbVersion)}\",\"detail\":\"{Escape(dbMsg)}\"}}");
         if (dbStatus != "ok") return 5;
@@ -76,38 +71,6 @@ public static class SelfTestCommand
         }
     }
 
-    private static (string status, string msg) StartLocalDbIfNeeded(AppSettings settings)
-    {
-        var instance = settings.Database.LocalDbInstance;
-        if (string.IsNullOrEmpty(instance))
-            return ("not_configured", "kein LocalDbInstance in Config");
-
-        try
-        {
-            var psi = new ProcessStartInfo("sqllocaldb", $"start \"{instance}\"")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using var proc = Process.Start(psi);
-            proc?.WaitForExit(10_000);
-            var exitCode = proc?.ExitCode ?? 1;
-            if (exitCode == 0)
-            {
-                return ("ok", $"sqllocaldb start {instance} beendet");
-            }
-
-            var err = proc?.StandardError.ReadToEnd() ?? "sqllocaldb start returned non-zero";
-            return ("not_running", err.Trim());
-        }
-        catch (Exception ex)
-        {
-            return ("start_failed", ex.Message);
-        }
-    }
-
     private static (string status, string msg, string version) TryConnect(AppSettings settings)
     {
         try
@@ -120,7 +83,8 @@ public static class SelfTestCommand
         }
         catch (Exception ex)
         {
-            return ("error", ex.Message, "(none)");
+            var detail = string.IsNullOrWhiteSpace(ex.Message) ? ex.GetType().FullName ?? ex.GetType().Name : ex.Message;
+            return ("error", detail, "(none)");
         }
     }
 

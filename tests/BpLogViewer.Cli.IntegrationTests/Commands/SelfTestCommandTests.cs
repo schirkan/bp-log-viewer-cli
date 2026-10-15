@@ -33,6 +33,7 @@ public class SelfTestCommandTests
             var output = swOut.ToString();
             var lines = output.Split('\n', StringSplitOptions.RemoveEmptyEntries);
             Assert.True(lines.Length >= 8, $"Expected at least 8 jsonl lines, got {lines.Length}");
+            Assert.DoesNotContain("\"step\":\"localdb\"", output);
 
             // Each line should be valid jsonl with a "step" or final marker.
             foreach (var line in lines)

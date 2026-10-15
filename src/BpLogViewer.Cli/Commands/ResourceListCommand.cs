@@ -34,7 +34,7 @@ public static class ResourceListCommand
             var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.List(name, nameContains, statusIds, statusNames, effectiveMax + 1);
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.ResourceInfo, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.ResourceInfo, filters, truncated);
         }
         catch (Exception ex)
         {

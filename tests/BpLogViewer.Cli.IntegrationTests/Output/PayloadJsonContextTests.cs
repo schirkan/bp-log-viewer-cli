@@ -47,6 +47,36 @@ public class PayloadJsonContextTests
         Assert.Contains("\"bytes\":100", json);
     }
 
+    [Theory]
+    [InlineData("Prüfung")]
+    [InlineData("ÄÖÜ äöü ß")]
+    [InlineData("日本語")]
+    public void ReadableContext_WritesUnicodeDirectly(string name)
+    {
+        var process = new BpLogViewer.Cli.Models.ProcessInfo(Guid.Empty, name, null, null, null, null, null, 0, 0, null);
+        var json = JsonSerializer.Serialize(process, PayloadJsonContext.Readable.ProcessInfo);
+
+        Assert.Contains($"\"name\":\"{name}\"", json);
+        Assert.Contains("\"process_id\":", json);
+        Assert.DoesNotContain("\"type\":", json);
+        using var doc = JsonDocument.Parse(json);
+        Assert.Equal(name, doc.RootElement.GetProperty("name").GetString());
+    }
+
+    [Fact]
+    public void ReadableContext_EscapesJsonControlCharacters()
+    {
+        const string detail = "Prüfung\n\"Pfad\" \\Test\t\u0001";
+        var json = JsonSerializer.Serialize(new WarningEnvelope("test", detail), PayloadJsonContext.Readable.WarningEnvelope);
+
+        Assert.Contains("Prüfung", json);
+        Assert.DoesNotContain('\n', json);
+        Assert.DoesNotContain('\t', json);
+        Assert.DoesNotContain('\u0001', json);
+        using var doc = JsonDocument.Parse(json);
+        Assert.Equal(detail, doc.RootElement.GetProperty("detail").GetString());
+    }
+
     [Fact]
     public void Context_IsExposed()
     {

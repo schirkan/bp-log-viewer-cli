@@ -89,7 +89,7 @@ public static class SessionLogCommand
                 resultTypeNames: resultTypeNames);
 
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.SessionLogEntry, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.SessionLogEntry, filters, truncated);
         }
         catch (Exception ex)
         {

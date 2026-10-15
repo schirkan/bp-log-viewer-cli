@@ -13,7 +13,7 @@ official BP CLI.
 
 ## What this is
 
-A single `.exe` (`.NET 8 self-contained single-file trimmed`, win-x64) that
+A single `.exe` (`.NET 8 framework-dependent single-file`, win-x64) that
 queries the Blue Prism SQL Server / LocalDB directly and emits results as
 [JSON Lines](https://jsonlines.org/) (jsonl) on stdout — one JSON object per
 line, ready for AI agents or `jq` to consume.
@@ -35,7 +35,8 @@ bp-log-viewer audit list --code RESSTART
 ```
 
 All commands emit **jsonl** on stdout by default; warnings and errors go as
-jsonl on stderr.
+jsonl on stderr. Printable Unicode characters (such as `ü`) are emitted directly
+rather than as `\uXXXX` escapes; JSON control characters remain escaped.
 
 ## Command overview
 
@@ -57,7 +58,7 @@ Global options (excerpt):
 
 ## Architecture (short)
 
-- **Runtime:** .NET 8 self-contained single-file trimmed, win-x64
+- **Runtime:** .NET 8 framework-dependent single-file, win-x64; requires .NET 8 Runtime x64
 - **DB driver:** `Microsoft.Data.SqlClient` 5.x (`BPA*`, `BPV*`)
 - **JSON:** `System.Text.Json` + Source Generator
 - **CLI parsing:** manual dispatcher (System.CommandLine workaround)
@@ -65,15 +66,21 @@ Global options (excerpt):
 
 ## Publish (single EXE)
 
-Local publish (Windows, self-contained, single-file, trimmed):
+Local publish (Windows, framework-dependent, single-file):
+The target system must have the .NET 8 Runtime (x64) installed; .NET Framework 4.x
+is not sufficient. The runtime is not bundled, reducing the executable size.
+Globalization support remains enabled because `Microsoft.Data.SqlClient` requires
+named cultures such as `en-US`; globalization-invariant mode is not supported.
+Trimming is disabled because the current SqlClient dependency causes a
+`TypeLoadException` during TLS login in the trimmed build.
 
 ```bash
 dotnet publish src/BpLogViewer.Cli/BpLogViewer.Cli.csproj \
   -c Release \
   -r win-x64 \
-  --self-contained true \
+  --self-contained false \
   -p:PublishSingleFile=true \
-  -p:PublishTrimmed=true \
+  -p:PublishTrimmed=false \
   -p:IncludeNativeLibrariesForSelfExtract=true \
   -o out/win-x64
 ```
@@ -90,7 +97,7 @@ Trigger:
 
 Steps:
 1. Restore + Build (`Release`)
-2. Publish as single-file EXE (`win-x64`, self-contained, trimmed)
+2. Publish as single-file EXE (`win-x64`, framework-dependent, untrimmed)
 3. ZIP + SHA256
 4. GitHub Release: create/update + attach both files
 
@@ -100,6 +107,8 @@ Copy `appsettings.template.json` to `appsettings.json` next to the binary and
 fill in `Database.ConnectionString`. The connection string accepts any
 standard ADO.NET value (LocalDB, remote SQL Server, integrated auth, SQL
 auth — whatever your Blue Prism environment uses).
+The connection target is determined solely by `Database.ConnectionString`.
+The CLI does not invoke `sqllocaldb start`; `self-test` checks the connection directly.
 
 | File | Purpose |
 |------|---------|

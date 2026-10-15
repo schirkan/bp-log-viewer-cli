@@ -28,7 +28,7 @@ public static class QueueListCommand
             var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.ListQueues(name, nameContains, onlyExceptions, onlyRunning, effectiveMax + 1);
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.QueueInfo, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.QueueInfo, filters, truncated);
         }
         catch (Exception ex)
         {

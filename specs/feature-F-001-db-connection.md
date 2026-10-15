@@ -25,7 +25,7 @@ CLI-Argument oder ENV-Var.
 1. `ConnectionString` aus `appsettings.json`, Section `BpLogViewer.Database.ConnectionString`.
 2. Override per CLI `--connection-string <cs>` (gewinnt vor allen anderen Quellen).
 3. Override per ENV `BP_DB_CONNECTION` (gewinnt vor Config, aber nach CLI).
-4. Optional `LocalDbInstance` aus Config; bei nicht erreichbarer Instanz: einmalig `sqllocaldb start <instanz>` versuchen, Exit 4 wenn das fehlschlägt.
+4. Verbindungsziel ausschließlich über `ConnectionString`; kein separater LocalDB-Instanzname und kein expliziter `sqllocaldb start`-Aufruf.
 5. Bei SQL-Verbindungsfehler: 1× Retry mit 500 ms Backoff, danach strukturierte Fehlermeldung auf stderr.
 6. Authentifizierung: Windows Integrated (keine User/Passwort-Pflicht).
 7. Verbindung wird einmal pro CLI-Aufruf geöffnet; Pooling aktiv.
@@ -54,7 +54,7 @@ Alle Sub-Commands, die `--status` akzeptieren (F-002, F-005, F-006), folgen ders
 1. `bp-log-viewer self-test` (F-014) meldet `db_status: ok` nach erfolgreichem Aufbau.
 2. Fehlende `appsettings.json` ohne CLI/ENV-Override → Exit 3, Meldung `config_missing: appsettings.json not found at <path>`.
 3. Leerer `ConnectionString` ohne Override → Exit 3, Meldung `config_invalid: BpLogViewer.Database.ConnectionString is empty`.
-4. LocalDB nicht erreichbar und Start schlägt fehl → Exit 4.
+4. LocalDB nicht erreichbar → SQL-Verbindungsfehler, Exit 5.
 5. SQL-Fehler nach Retry → Exit 5, Meldung `sql_error: <nr>: <msg>`.
 6. CLI-Aufruf mit `--connection-string "..."` ohne `appsettings.json` läuft erfolgreich.
 7. `BPAStatus` wird 1× beim Start geladen und im Prozess gecacht (`StatusCache`-Service).

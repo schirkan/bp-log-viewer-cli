@@ -22,8 +22,8 @@ Abschnitte.
 | Schicht | Wahl | Begründung |
 |:--------|:-----|:-----------|
 | Sprache | C# 12 / .NET 8 | Martins Vorgabe; LTS bis 2026-11, aktuelle Features (Source-Generator, AOT) |
-| Runtime | self-contained, single-file, trimmed | Verteilung als einzelne `.exe` ohne .NET-Installations-Voraussetzung |
-| Build | `dotnet publish -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true /p:PublishTrimmed=true /p:IncludeNativeLibrariesForSelfExtract=true` | siehe `dotnet-self-contained-redeploy` |
+| Runtime | framework-dependent, single-file, untrimmed | Einzelne `.exe`, .NET-8-Runtime (x64) erforderlich; Globalisierung aktiv, Trimming wegen SqlClient-TLS-Kompatibilität deaktiviert |
+| Build | `dotnet publish -c Release -r win-x64 --self-contained false /p:PublishSingleFile=true /p:PublishTrimmed=false /p:IncludeNativeLibrariesForSelfExtract=true` | Runtime wird nicht mitgeliefert |
 | DB-Zugriff | `Microsoft.Data.SqlClient` 5.x | kompatibel zur BP-eigenen Version 2.x; SqlBulkCopy für große Exporte |
 | CLI-Parser | `System.CommandLine` (Microsoft) | deklarativ, gut dokumentiert, Roslyn-Generator statt Reflection |
 | JSON | `System.Text.Json` mit `JsonSerializerContext` (Source-Generator) | Trim-fest, kein `Reflection-based serialization` zur Laufzeit |
@@ -74,8 +74,7 @@ bp-log-viewer-cli/
 {
   "BpLogViewer": {
     "Database": {
-      "ConnectionString": "REPLACE_WITH_YOUR_CONNECTION_STRING",
-      "LocalDbInstance": "BluePrismLocalDB"
+      "ConnectionString": "REPLACE_WITH_YOUR_CONNECTION_STRING"
     },
     "Output": {
       "DefaultFormat": "jsonl",
@@ -98,7 +97,6 @@ bp-log-viewer-cli/
 | Feld | Bedeutung | Default |
 |:-----|:----------|:--------|
 | `BpLogViewer.Database.ConnectionString` | vollständiger ADO.NET-Connection-String | — (Pflicht) |
-| `BpLogViewer.Database.LocalDbInstance` | optionaler LocalDB-Instanzname; CLI versucht `sqllocaldb start <name>`, falls nicht erreichbar | _(leer)_ |
 | `BpLogViewer.Output.DefaultFormat` | `jsonl` \| `table` | `jsonl` |
 | `BpLogViewer.Output.MaxRowsBeforeFile` | Schwellwert für Hinweis „Output zu groß, in Datei auslagern" | `1000` |
 | `BpLogViewer.Output.MaxRowsAbsoluteCeiling` | **Hard-Cap** für `--max-rows` (OOM-Schutz). `--max-rows` > Ceiling → Exit 8. | `100000` |
@@ -279,7 +277,6 @@ ORDER BY logid;
 | Hilfe / `--help` | Output | 0 |
 | Output truncated (>`MaxRowsBeforeFile` ohne `--output`) | erste `MaxRows` + Warning | 2 |
 | Config-Datei fehlt / invalid | Fehler | 3 |
-| LocalDB nicht erreichbar (Start fehlgeschlagen) | Fehler | 4 |
 | SQL-Verbindung schlägt fehl (nach Retry) | Fehler | 5 |
 | Output-Pfad nicht beschreibbar | Fehler | 6 |
 | Output-Pfad ist Verzeichnis | Fehler | 6 |

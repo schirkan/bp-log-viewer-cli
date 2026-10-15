@@ -47,7 +47,7 @@ public static class OutputFileWriter
             File.Move(tempPath, targetPath, overwrite: true);
 
             var marker = new OutputWrittenEnvelope(targetPath, rows.Count, bytes);
-            Console.WriteLine(JsonSerializer.Serialize(marker, PayloadJsonContext.Default.OutputWrittenEnvelope));
+            Console.WriteLine(JsonSerializer.Serialize(marker, PayloadJsonContext.Readable.OutputWrittenEnvelope));
             errorCode = null;
             errorMessage = null;
             return true;

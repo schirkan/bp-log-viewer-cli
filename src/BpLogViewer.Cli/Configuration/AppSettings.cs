@@ -16,8 +16,6 @@ public sealed class DatabaseSettings
     /// <summary>Vollständiger ADO.NET-Connection-String (Pflicht).</summary>
     public string? ConnectionString { get; set; }
 
-    /// <summary>Optionaler LocalDB-Instanzname; CLI versucht <c>sqllocaldb start</c>, falls nicht erreichbar.</summary>
-    public string? LocalDbInstance { get; set; }
 }
 
 public sealed class OutputSettings

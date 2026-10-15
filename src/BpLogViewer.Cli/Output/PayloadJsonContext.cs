@@ -1,4 +1,7 @@
+using System.Text.Encodings.Web;
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using BpLogViewer.Cli.Commands;
 using BpLogViewer.Cli.Models;
 
@@ -30,4 +33,12 @@ namespace BpLogViewer.Cli.Output;
 [JsonSerializable(typeof(OutputWrittenEnvelope))]
 public partial class PayloadJsonContext : JsonSerializerContext
 {
+    private static readonly Lazy<PayloadJsonContext> ReadableContext = new(CreateReadableContext);
+
+    public static PayloadJsonContext Readable => ReadableContext.Value;
+
+    private static PayloadJsonContext CreateReadableContext() => new(new JsonSerializerOptions(Default.Options)
+    {
+        Encoder = JavaScriptEncoder.Create(UnicodeRanges.All)
+    });
 }

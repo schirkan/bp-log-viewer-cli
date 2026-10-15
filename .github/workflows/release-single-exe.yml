@@ -48,8 +48,8 @@ jobs:
 
       - name: Publish single-file exe (win-x64)
         # Publish-Flags sind jetzt in der .csproj zentral (PublishSingleFile,
-        # SelfContained, PublishTrimmed, IncludeNativeLibrariesForSelfExtract,
-        # DebugType=None, DebugSymbols=false, InvariantGlobalization=true).
+        # SelfContained=false, PublishTrimmed=false, IncludeNativeLibrariesForSelfExtract,
+        # DebugType=None, DebugSymbols=false, InvariantGlobalization=false).
         # Hier nur noch Konfiguration + Output-Pfad.
         run: >-
           dotnet publish src/BpLogViewer.Cli/BpLogViewer.Cli.csproj

@@ -34,7 +34,7 @@ public static class ErrorWriter
     public static async Task WriteErrorAsync(string code, string message, int exitCode)
     {
         var envelope = new ErrorEnvelope(code, message, exitCode);
-        var json = JsonSerializer.Serialize(envelope, PayloadJsonContext.Default.ErrorEnvelope);
+        var json = JsonSerializer.Serialize(envelope, PayloadJsonContext.Readable.ErrorEnvelope);
         await Console.Error.WriteLineAsync(json);
     }
 
@@ -42,7 +42,7 @@ public static class ErrorWriter
     public static async Task WriteWarningAsync(string code, string detail)
     {
         var envelope = new WarningEnvelope(code, detail);
-        var json = JsonSerializer.Serialize(envelope, PayloadJsonContext.Default.WarningEnvelope);
+        var json = JsonSerializer.Serialize(envelope, PayloadJsonContext.Readable.WarningEnvelope);
         await Console.Error.WriteLineAsync(json);
     }
 }

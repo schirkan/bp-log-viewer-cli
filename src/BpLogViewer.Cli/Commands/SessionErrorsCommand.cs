@@ -48,12 +48,12 @@ public static class SessionErrorsCommand
                 {
                     rows[i] = rows[i] with { StatusName = statusCache.GetName(rows[i].Status) };
                 }
-                return CommandHost.Emit(rows, PayloadJsonContext.Default.SessionInfo, filters, truncated);
+                return CommandHost.Emit(rows, PayloadJsonContext.Readable.SessionInfo, filters, truncated);
             }
 
             // Aggregate-Modus: GROUP BY in SQL (kein LINQ auf max+1 Rows).
             var aggregates = repo.Aggregate(since, until, filters.Process, filters.Resource, filters.Text, exceptionTypes);
-            return CommandHost.Emit(aggregates, PayloadJsonContext.Default.SessionErrorAggregate, filters, wasTruncated: false);
+            return CommandHost.Emit(aggregates, PayloadJsonContext.Readable.SessionErrorAggregate, filters, wasTruncated: false);
         }
         catch (Exception ex)
         {

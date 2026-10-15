@@ -33,10 +33,10 @@ Zusätzlich: Binary-Version für Diagnose und CI/CD-Logging.
 ## Sub-Command 2: `self-test`
 
 1. Befehl: `bp-log-viewer self-test`.
-2. Schritte (alle in Reihenfolge, Abbruch bei Fehler in **Schritt 1–3**):
+2. Schritte (alle in Reihenfolge, Abbruch bei Fehler in **Schritt 1–2**):
    1. **Config:** `appsettings.json` laden → bei Fehler `config_status: error`.
-   2. **LocalDB:** Instanz `BpLogViewer.Database.LocalDbInstance` aus Config vorhanden? → `localdb_status: ok | not_configured | not_running | start_failed`.
-   3. **DB-Connect:** `SELECT @@VERSION` → `db_status: ok`, `db_version: <…>`.
+   2. **DB-Connect:** `SELECT @@VERSION` über `ConnectionString` → `db_status: ok`, `db_version: <…>`. Kein separater LocalDB-Schritt.
+   3. **Status-Cache:** Statuswerte aus `BPAStatus` laden.
    4. **BP-Version (DB bevorzugt, Registry als Fallback):**
       - **DB-Vorrang:** `SELECT TOP 1 versionno FROM BPADBVersion ORDER BY installeddate DESC` (oder vergleichbar; DB ist Single Source of Truth).
       - **Registry-Fallback** nur wenn DB-Query fehlschlägt: `HKLM\SOFTWARE\Blue Prism Limited\Automate\Version`.
@@ -63,7 +63,7 @@ Zusätzlich: Binary-Version für Diagnose und CI/CD-Logging.
 2. `bp_version: 7.5.1.18099` aus DB.
 3. `bp-log-viewer version` liefert gültiges jsonl mit `cli_version`, `build_commit`, `build_date`.
 4. Bei falscher `appsettings.json` (z. B. gelöscht) → Exit 3 und `config_status: error`.
-5. Bei gestoppter LocalDB und erfolgreichem Start-Versuch → `localdb_status: ok` (statt `not_running`).
+5. Kein `localdb`-Diagnoseschritt und kein `sqllocaldb start`-Aufruf; ohne separate LocalDB-Konfiguration entsteht kein `degraded`-Status.
 6. Bei fehlender `BPAWorkQueue`-Tabelle → Exit 0 mit `degraded: true`.
 
 ## KI-Integration

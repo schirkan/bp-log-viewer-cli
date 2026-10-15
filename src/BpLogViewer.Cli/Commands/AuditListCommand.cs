@@ -31,7 +31,7 @@ public static class AuditListCommand
             var effectiveMax = CommandHost.ResolveEffectiveMax(filters, fallbackDefault: 500);
             var rows = repo.List(since, until, codes, user, targetProcess, targetResource, includeXml, fullComments, effectiveMax + 1);
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.AuditEventInfo, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.AuditEventInfo, filters, truncated);
         }
         catch (Exception ex)
         {

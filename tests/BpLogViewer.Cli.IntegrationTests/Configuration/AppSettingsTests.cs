@@ -20,7 +20,6 @@ public class AppSettingsTests
     {
         var s = new DatabaseSettings();
         Assert.Null(s.ConnectionString);
-        Assert.Null(s.LocalDbInstance);
     }
 
     [Fact]

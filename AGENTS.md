@@ -3,7 +3,7 @@
 ## Project
 
 - **Name:** BP Log Viewer CLI
-- **Stack:** C# 12 / .NET 8 (self-contained single-file trimmed, win-x64)
+- **Stack:** C# 12 / .NET 8 (framework-dependent single-file, untrimmed, win-x64; requires .NET 8 Runtime x64)
 - **DB target:** Blue Prism 7.5.x (LocalDB or remote SQL Server, configurable)
 - **Owner:** Martin
 - **License:** MIT (see `LICENSE`)
@@ -21,7 +21,7 @@
 
 - All planned commands implemented and verified against a real Blue Prism 7.5.x database.
 - Code review pass 1-4 completed; all findings fixed.
-- Release workflow (`.github/workflows/release-single-exe.yml`) ships a self-contained single-file EXE + SHA256 as GitHub Release assets on tag `v*`.
+- Release workflow (`.github/workflows/release-single-exe.yml`) ships a framework-dependent single-file EXE + SHA256 as GitHub Release assets on tag `v*`.
 - Latest release: see [GitHub Releases](https://github.com/schirkan/bp-log-viewer-cli/releases).
 
 ## Git
@@ -36,7 +36,7 @@
 
 | Aspect | Choice |
 |:-------|:-------|
-| Runtime | .NET 8 self-contained single-file trimmed, win-x64 |
+| Runtime | .NET 8 framework-dependent single-file, untrimmed, win-x64; .NET 8 Runtime x64 required |
 | DB driver | `Microsoft.Data.SqlClient` 5.x |
 | CLI parser | manual dispatcher (System.CommandLine workaround) |
 | JSON | `System.Text.Json` + `JsonSerializerContext` (source generator) |

@@ -62,7 +62,7 @@ public static class SessionGetCommand
                 ErrorWriter.WriteWarningAsync("output_truncated", $"work_queue_items limited to {SessionRepository.WorkQueueItemsLimit}").GetAwaiter().GetResult();
             }
 
-            return CommandHost.Emit(new[] { details }, PayloadJsonContext.Default.SessionDetails, filters, wasTruncated: false);
+            return CommandHost.Emit(new[] { details }, PayloadJsonContext.Readable.SessionDetails, filters, wasTruncated: false);
         }
         catch (Exception ex)
         {

@@ -21,17 +21,18 @@
 
     <!--
       Release-Optimierungen für minimale Binary-Größe.
-      - InvariantGlobalization: spart ICU/全球化-Daten (~1–2 MB).
-      - PublishSingleFile + SelfContained + PublishTrimmed + IncludeNativeLibrariesForSelfExtract:
-        eine einzige .exe, ohne .NET-Runtime auf dem Zielsystem vorauszusetzen.
+      - InvariantGlobalization=false: SqlClient benötigt benannte Kulturen (z. B. en-US).
+      - PublishSingleFile + IncludeNativeLibrariesForSelfExtract:
+        eine einzige .exe; benötigt die .NET-8-Runtime (x64) auf dem Zielsystem.
       - DebugType=None / DebugSymbols=false: keine PDBs, keine Source-Info.
       Diese Properties sind im .csproj zentral, damit `dotnet publish` ohne
       zusätzliche -p:-Flags die Release-Binary erzeugt.
     -->
-    <InvariantGlobalization>true</InvariantGlobalization>
+    <InvariantGlobalization>false</InvariantGlobalization>
     <PublishSingleFile>true</PublishSingleFile>
-    <SelfContained>true</SelfContained>
-    <PublishTrimmed>true</PublishTrimmed>
+    <SelfContained>false</SelfContained>
+    <!-- SqlClient 5.x verursacht im getrimmten Publish TypeLoadException beim TLS-Login. -->
+    <PublishTrimmed>false</PublishTrimmed>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <DebugType>None</DebugType>
     <DebugSymbols>false</DebugSymbols>
@@ -71,20 +72,6 @@
     <Content Include="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-  </ItemGroup>
-
-  <!--
-    Microsoft.Data.SqlClient bringt beim selbst-enthaltenden Publish den
-    Native-SNI-Provider und den TDS-Handler mit. Wir nutzen nur den
-    SqlClient-ADO.NET-Pfad (kein TDS, kein Azure-Auth-Code, kein Identity-
-    Broker). TrimmerRootAssembly sichert die Reflection-Pfade ab, die
-    SqlClient intern nutzt (Connection-String-Parser, Type-Mapping).
-    Ohne diese Sicherung würde PublishTrimmed die SNI-DLL und ein paar
-    interne Helper wegtrimmen und `SqlConnection.Open` würde zur Laufzeit
-    mit MissingMethodException fehlschlagen.
-  -->
-  <ItemGroup>
-    <TrimmerRootAssembly Include="Microsoft.Data.SqlClient" />
   </ItemGroup>
 
 </Project>

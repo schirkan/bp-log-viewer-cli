@@ -48,7 +48,7 @@ public static class QueueItemsCommand
             var effectiveMax = CommandHost.ResolveEffectiveMax(filters);
             var rows = repo.ListItems(effectiveQueueId.Value, statuses, filters.Since, filters.Until, filters.Text, fullData, includeTags, effectiveMax + 1);
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Default.QueueItemInfo, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.QueueItemInfo, filters, truncated);
         }
         catch (Exception ex)
         {

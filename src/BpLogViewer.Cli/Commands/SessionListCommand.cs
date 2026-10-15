@@ -64,7 +64,7 @@ public static class SessionListCommand
         }
 
         var truncated = CommandHost.Truncate(rows, effectiveMax);
-        return CommandHost.Emit(rows, PayloadJsonContext.Default.SessionInfo, filters, truncated);
+        return CommandHost.Emit(rows, PayloadJsonContext.Readable.SessionInfo, filters, truncated);
     }
 
     private static bool TryResolveStatusIds(FilterSet filters, StatusCache cache, out int[]? ids, out string? error)

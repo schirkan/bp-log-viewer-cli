@@ -88,7 +88,7 @@ public class ConfigurationLoaderTests : IDisposable
     }
 
     [Fact]
-    public void Load_ReadsConfigFileValues()
+    public void Load_ReadsConfigFileValues_IgnoresLegacyLocalDbInstance()
     {
         File.WriteAllText(Path.Combine(_tmpDir, "appsettings.json"),
             "{\"BpLogViewer\":{\"Database\":{\"ConnectionString\":\"abc\",\"LocalDbInstance\":\"MyLocalDb\"},\"Output\":{\"DefaultFormat\":\"table\",\"MaxRowsBeforeFile\":42,\"MaxRowsAbsoluteCeiling\":50000},\"Timezone\":{\"DisplayTimezone\":\"Europe/London\"}}}");
@@ -96,7 +96,6 @@ public class ConfigurationLoaderTests : IDisposable
 
         var s = ConfigurationLoader.Load(baseDir: _tmpDir);
         Assert.Equal("abc", s.Database.ConnectionString);
-        Assert.Equal("MyLocalDb", s.Database.LocalDbInstance);
         Assert.Equal("table", s.Output.DefaultFormat);
         Assert.Equal(42, s.Output.MaxRowsBeforeFile);
         Assert.Equal(50000, s.Output.MaxRowsAbsoluteCeiling);
