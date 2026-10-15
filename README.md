@@ -56,6 +56,15 @@ Global options (excerpt):
 - `--process` / `--resource` / `--status`
 - `--text`
 
+## Agent skill and full CLI reference
+
+The [BP Log Viewer CLI skill](.github/skills/bp-log-viewer-cli/SKILL.md) provides
+an investigation workflow for agents. Its [complete parameter reference](.github/skills/bp-log-viewer-cli/references/cli-reference.md)
+(in German) documents every implemented command, filter scope, examples,
+configuration, output handling, exit codes, and current limitations.
+The [Blue Prism Operator agent](.github/agents/Blue%20Prism%20Operator.agent.md)
+uses this skill for error analysis.
+
 ## Architecture (short)
 
 - **Runtime:** .NET 8 framework-dependent single-file, win-x64; requires .NET 8 Runtime x64
