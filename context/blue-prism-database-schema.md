@@ -76,7 +76,7 @@ relevant sind. Reine Konfig-/Auth-Tabellen werden hier nicht im Detail aufgefüh
 | `lastupdated` | datetime | YES | Heartbeat |
 | `laststage` | nvarchar(MAX) | YES | Name der zuletzt betretenen Stage |
 | `warningthreshold` | int | YES | Minuten bis Warnung |
-| `starttimezoneoffset` | int | YES | TZ-Offset in Minuten (+60 für DE) |
+| `starttimezoneoffset` | int | YES | TZ-Offset in Sekunden (7200 = +02:00, 3600 = +01:00); zur Lokalisierung des UTC-Datetime-Werts |
 | `endtimezoneoffset` | int | YES | |
 | `lastupdatedtimezoneoffset` | int | YES | |
 | `terminationreason` | tinyint | YES | Code für Abbruchgrund |
@@ -235,5 +235,5 @@ Schlüssel-Spalten `BPAWorkQueueItem`:
 1. **Views nutzen, wo möglich** — `BPVSessionInfo` für Session-Listen/Details, `BPVWorkQueueItem` für Item-Listen. Schneller und konsistenter mit dem offiziellen Tool.
 2. **`sessionid` vs. `sessionnumber`** — intern ist `sessionnumber` (int) der Join-Schlüssel zu `BPASessionLog_*`. Für die KI ist `sessionnumber` der menschenlesbare Identifier.
 3. **Unicode vs. NonUnicode** — bei BP 7.5.x ist die NonUnicode-Variante auf der genutzten Collation aktiv. CLI muss beide unterstützen und beim Start prüfen, welche befüllt ist.
-4. **Zeitstempel in UTC + TZ-Offset** — pro Zeile eigener Offset (`starttimezoneoffset`, `endtimezoneoffset`). CLI muss Zeitstempel korrekt lokalisieren (Europe/Berlin = +60).
+4. **Zeitstempel in UTC + TZ-Offset** — pro Zeile eigener Offset in Sekunden (`starttimezoneoffset`, `endtimezoneoffset`). CLI konvertiert UTC zum gespeicherten Offset (z. B. 11:13 UTC mit 7200 → 13:13+02:00), ohne den Zeitpunkt zu verändern. Session-Logs bleiben UTC; Session-Filter vergleichen UTC-Werte.
 5. **Result-Typen und Status-Codes** — nicht hartcodieren, sondern zur Laufzeit aus `BPAStatus` und `BPAExceptionType` ableiten und in der Antwort mitliefern.

@@ -48,6 +48,33 @@ public class SessionRepositoryTests
     }
 
     [Fact]
+    public void List_TimeWindowMatchesEmittedUtcInstantAndEquivalentOffsetWindow()
+    {
+        _env.RequireDatabase();
+        using var db = _env.CreateContext();
+        var repo = new SessionRepository(db);
+        var samples = repo.List(
+            since: null, until: null, process: null, resource: null,
+            statusIds: null, hasException: false, maxRowsPlusOne: 5);
+        Assert.NotEmpty(samples);
+
+        foreach (var sample in samples)
+        {
+            var since = sample.StartedAt.ToUniversalTime().AddSeconds(-1);
+            var until = sample.StartedAt.ToUniversalTime().AddSeconds(1);
+            var utcRows = repo.List(since, until, sample.Process, sample.Resource,
+                statusIds: null, hasException: false, maxRowsPlusOne: 100);
+            var offsetRows = repo.List(since.ToOffset(TimeSpan.FromHours(5.5)),
+                until.ToOffset(TimeSpan.FromHours(5.5)), sample.Process, sample.Resource,
+                statusIds: null, hasException: false, maxRowsPlusOne: 100);
+
+            Assert.Contains(utcRows, row => row.SessionNumber == sample.SessionNumber);
+            Assert.All(utcRows, row => Assert.True(row.StartedAt >= since && row.StartedAt < until));
+            Assert.Equal(utcRows.Select(row => row.SessionNumber), offsetRows.Select(row => row.SessionNumber));
+        }
+    }
+
+    [Fact]
     public void List_WithSinceInFuture_ReturnsEmpty()
     {
         _env.RequireDatabase();

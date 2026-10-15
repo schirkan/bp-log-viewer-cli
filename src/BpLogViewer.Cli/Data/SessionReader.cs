@@ -11,25 +11,19 @@ namespace BpLogViewer.Cli.Data;
 internal static class SessionReader
 {
     /// <summary>
-    /// Liest UTC-Datetime + Minuten-Offset (BP-Spalten <c>starttimezoneoffset</c>/<c>endtimezoneoffset</c>
-    /// sind Minuten). Keine Sekunden-Heuristik, da die Spalten explizit Minuten enthalten.
+    /// Liest den gespeicherten UTC-Datetime-Wert und konvertiert ihn zum Offset in
+    /// Sekunden aus <c>starttimezoneoffset</c>/<c>endtimezoneoffset</c> (7200 = +02:00).
     /// </summary>
-    public static DateTimeOffset ReadDateTimeOffsetSafe(SqlDataReader reader, int dtIndex, int offsetIndex)
+    public static DateTimeOffset ReadDateTimeOffsetSafe(IDataRecord reader, int dtIndex, int offsetIndex)
     {
         if (reader.IsDBNull(dtIndex) || reader.IsDBNull(offsetIndex))
         {
             return default;
         }
         var dt = reader.GetDateTime(dtIndex);
-        var offsetMinutes = Convert.ToInt32(reader.GetValue(offsetIndex), CultureInfo.InvariantCulture);
-        var offset = TimeSpan.FromMinutes(offsetMinutes);
-        // DateTimeOffset-Validierung: Offsets außerhalb ±14h werfen
-        // ArgumentOutOfRangeException. BP-Datenbanken können durch Datenanomalien
-        // oder DST-Edge-Cases Offsets außerhalb dieses Bereichs enthalten.
-        // Wir clampen statt zu fehlschlagen — Drift ist besser als Crash.
-        if (offset.TotalHours > 14) offset = TimeSpan.FromHours(14);
-        if (offset.TotalHours < -14) offset = TimeSpan.FromHours(-14);
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), offset);
+        var offsetSeconds = Convert.ToInt32(reader.GetValue(offsetIndex), CultureInfo.InvariantCulture);
+        var offset = TimeSpan.FromSeconds(offsetSeconds);
+        return DateTimeUtils.AssumeUtc(dt).ToOffset(offset);
     }
 
     public static SessionInfo ReadSessionInfo(SqlDataReader reader)

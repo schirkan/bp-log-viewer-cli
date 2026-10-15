@@ -114,6 +114,8 @@ Syntax: `session list [globale-optionen]`. Quelle: `BPVSessionInfo`.
 
 Ausgabe: `session_number`, `session_id`, `process`, `process_id`, `resource`, `resource_id`, `status`, `status_name`, `started_at`, `ended_at`, `duration_sec`, `last_stage`, `exception_type`, `exception_message`.
 
+Session-Datetime-Werte werden als UTC interpretiert und zum gespeicherten Offset in **Sekunden** konvertiert (7200 = +02:00). Beispiel: 11:13 UTC → 13:13+02:00, nicht 11:13+02:00. Dies gilt auch für `session get` und einzelne `session errors`. Logs bleiben UTC (`+00:00`); unterschiedliche Offsets sind konsistent, wenn die UTC-Zeitpunkte übereinstimmen. `--since`/`--until` filtern den UTC-Zeitpunkt, nicht die lokalisierte Uhrzeit.
+
 ### `session get`
 
 Syntax: `session get <positive-session-number> [--include-state-xml]` oder `session get --session-id <uuid> [--include-state-xml]`.

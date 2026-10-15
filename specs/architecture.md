@@ -140,7 +140,7 @@ ENV-Override für `DisplayTimezone`: `BP_LOG_VIEWER_TIMEZONE` (IANA, z. B. `UTC`
 | `--since` / `--until` mit Offset | wie angegeben (z. B. `2026-10-13T14:00:00+02:00`) |
 | Zeitstempel im Output | ISO-8601 mit Offset (`2026-10-13T08:42:11+01:00`) |
 | `--since > --until` | Exit 11 (`filter_invalid: since > until`) |
-| DB-Spalten `starttimezoneoffset` / `endtimezoneoffset` | zur Anzeige verwendet (BP-eigene TZ-Info) |
+| DB-Spalten `starttimezoneoffset` / `endtimezoneoffset` | Offset in Sekunden (7200 = +02:00, 3600 = +01:00); gespeicherten UTC-Datetime-Wert mit `ToOffset` konvertieren, nicht den Offset nur anhängen (11:13 UTC → 13:13+02:00). Logs bleiben UTC; Filter und Dauer vergleichen denselben Zeitpunkt. Ungültige Offsets werden nicht still begrenzt. |
 
 ### 4.5 Status-Convention (`--status` Code + Name)
 

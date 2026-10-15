@@ -110,6 +110,15 @@ Steps:
 3. ZIP + SHA256
 4. GitHub Release: create/update + attach both files
 
+## Session timestamps
+
+Session datetimes are interpreted as **UTC** and converted to the Blue Prism offset
+in **seconds** (`7200` → `+02:00`, `3600` → `+01:00`); the offset is not merely
+attached to the stored clock time. For example, stored `11:13 UTC` with `7200`
+is displayed as `13:13+02:00`. Session logs remain in UTC (`+00:00`); their instants
+and UTC list filters match the localized session timestamps. Invalid offsets are
+reported as errors, not silently clamped to `±14:00`.
+
 ## Configuration
 
 Copy `appsettings.template.json` to `appsettings.json` next to the binary and
