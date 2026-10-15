@@ -5,9 +5,9 @@ using BpLogViewer.Cli.Output;
 namespace BpLogViewer.Cli.Filters;
 
 /// <summary>
-/// Parses CLI args into a <see cref="Filters"/> object. Validates against
-/// architecture § 4.4 (Timezone), § 5 (Global Options) and § 8 (Exit codes).
-/// Throws <see cref="FilterValidationException"/> on invalid input.
+/// Parses CLI args into a <see cref="Filters"/> object. Validates ISO-8601
+/// timestamps, integer limits and option value enums. Throws
+/// <see cref="FilterValidationException"/> on invalid input.
 /// </summary>
 public static class FilterParser
 {
@@ -152,7 +152,7 @@ public static class FilterParser
             ConnectionString: connectionString);
     }
 
-    /// <summary>ISO-8601 mit/ohne Offset. Ohne Offset → UTC (architecture § 4.4).</summary>
+    /// <summary>ISO-8601 mit/ohne Offset. Ohne Offset → UTC.</summary>
     private static DateTimeOffset ParseIsoDate(string value)
     {
         if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dto))

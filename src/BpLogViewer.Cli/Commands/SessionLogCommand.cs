@@ -9,7 +9,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer session log</c> (F-004).
+/// <c>bp-log-viewer session log</c>.
 /// </summary>
 public static class SessionLogCommand
 {
@@ -122,8 +122,8 @@ public static class SessionLogCommand
         }
         catch (Exception ex)
         {
-            // Fallback bleibt aktiv, aber wir warnen, damit der KI-Konsument
-            // den Diagnose-Pfad nachvollziehen kann (Code-Review-Finding C6).
+            // Fallback bleibt aktiv, aber wir warnen, damit der Konsument
+            // den Diagnose-Pfad nachvollziehen kann.
             ErrorWriter.WriteWarningAsync("result_type_table_unavailable", ex.Message).GetAwaiter().GetResult();
         }
 

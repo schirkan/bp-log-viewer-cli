@@ -12,8 +12,7 @@ internal static class SessionReader
 {
     /// <summary>
     /// Liest UTC-Datetime + Minuten-Offset (BP-Spalten <c>starttimezoneoffset</c>/<c>endtimezoneoffset</c>
-    /// sind Minuten — architecture § 4.4). Keine Sekunden-Heuristik, da Spec
-    /// explizit Minuten fordert.
+    /// sind Minuten). Keine Sekunden-Heuristik, da die Spalten explizit Minuten enthalten.
     /// </summary>
     public static DateTimeOffset ReadDateTimeOffsetSafe(SqlDataReader reader, int dtIndex, int offsetIndex)
     {
@@ -23,7 +22,14 @@ internal static class SessionReader
         }
         var dt = reader.GetDateTime(dtIndex);
         var offsetMinutes = Convert.ToInt32(reader.GetValue(offsetIndex), CultureInfo.InvariantCulture);
-        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), TimeSpan.FromMinutes(offsetMinutes));
+        var offset = TimeSpan.FromMinutes(offsetMinutes);
+        // DateTimeOffset-Validierung: Offsets außerhalb ±14h werfen
+        // ArgumentOutOfRangeException. BP-Datenbanken können durch Datenanomalien
+        // oder DST-Edge-Cases Offsets außerhalb dieses Bereichs enthalten.
+        // Wir clampen statt zu fehlschlagen — Drift ist besser als Crash.
+        if (offset.TotalHours > 14) offset = TimeSpan.FromHours(14);
+        if (offset.TotalHours < -14) offset = TimeSpan.FromHours(-14);
+        return new DateTimeOffset(DateTime.SpecifyKind(dt, DateTimeKind.Unspecified), offset);
     }
 
     public static SessionInfo ReadSessionInfo(SqlDataReader reader)

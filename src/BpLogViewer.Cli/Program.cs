@@ -7,8 +7,6 @@ namespace BpLogViewer.Cli;
 
 /// <summary>
 /// Entry point for the BP Log Viewer CLI.
-/// See <c>specs/architecture.md</c> for the overall design and
-/// <c>specs/feature-F-013-output-format.md</c> for the output contract.
 /// </summary>
 /// <remarks>
 /// Verwendet einen minimalen manuellen Dispatcher statt System.CommandLine,
@@ -19,7 +17,7 @@ namespace BpLogViewer.Cli;
 /// </remarks>
 public static class Program
 {
-    /// <summary>Process entry point. Returns the CLI exit code (see architecture § 8).</summary>
+    /// <summary>Process entry point. Returns the CLI exit code.</summary>
     public static int Main(string[] args)
     {
         try
@@ -32,11 +30,11 @@ public static class Program
             // Split: globale Optionen (vor Sub-Command) | Sub-Command | Sub-Command-Args
             var (subCommand, globalArgs, subArgs) = SplitArgs(args);
 
-            // F-011: globale Filter/Optionen validieren.
-            // Wichtig: globale Optionen werden aus ALLEN Args geparst (nicht nur
-            // globalArgs), damit z. B. "process list --max-rows 1" genauso
-            // funktioniert wie "--max-rows 1 process list". Der Sub-Command-Name
-            // und Sub-Args werden von FilterParser ignoriert (siehe default-Branch).
+            // Globale Filter/Optionen validieren. Wichtig: globale Optionen
+            // werden aus ALLEN Args geparst (nicht nur globalArgs), damit z. B.
+            // "process list --max-rows 1" genauso funktioniert wie
+            // "--max-rows 1 process list". Der Sub-Command-Name und Sub-Args
+            // werden von FilterParser ignoriert (siehe default-Branch).
             // Sub-Args werden vom jeweiligen Command-Parser verarbeitet, der
             // globale Optionen via FilterParser.OptionsWithValue überspringt.
             var filters = FilterParser.Parse(args);
@@ -115,27 +113,18 @@ public static class Program
         Console.Error.WriteLine("");
         Console.Error.WriteLine("Commands:");
         Console.Error.WriteLine("  version           Show CLI version and build information (jsonl)");
-        Console.Error.WriteLine("  self-test         Sanity-check config, DB connection, tables (F-014)");
-        Console.Error.WriteLine("  session ...       Session list / get / log / errors (F-002 .. F-005)");
-        Console.Error.WriteLine("  resource list     List resources (F-006)");
-        Console.Error.WriteLine("  process list      List processes (F-007)");
-        Console.Error.WriteLine("  queue ...         Work queues (F-008) + items (F-009)");
-        Console.Error.WriteLine("  audit list        Audit events (F-010)");
+        Console.Error.WriteLine("  self-test         Sanity-check config, DB connection, tables");
+        Console.Error.WriteLine("  session ...       Session list / get / log / errors");
+        Console.Error.WriteLine("  resource list     List resources");
+        Console.Error.WriteLine("  process list      List processes");
+        Console.Error.WriteLine("  queue ...         Work queues + items");
+        Console.Error.WriteLine("  audit list        Audit events");
         Console.Error.WriteLine("");
-        Console.Error.WriteLine("Global options (F-011 + architecture § 5):");
+        Console.Error.WriteLine("Global options:");
         Console.Error.WriteLine("  --connection-string <cs>  --output <path>  --format jsonl|table");
         Console.Error.WriteLine("  --max-rows <n>  --since <iso>  --until <iso>");
         Console.Error.WriteLine("  --process <name>  --resource <name>  --status <code-or-name>");
         Console.Error.WriteLine("  --has-exception  --level <lvl>  --text <substr>  --verbose");
-        return 0;
-    }
-
-    private static int NotYetImplemented(string command, string spec)
-    {
-        ErrorWriter.WriteErrorAsync(
-            "not_implemented",
-            $"Command '{command}' ist in der Spec ({spec}) definiert, aber noch nicht implementiert.",
-            0).GetAwaiter().GetResult();
         return 0;
     }
 
@@ -149,7 +138,8 @@ public static class Program
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
-            return NotYetImplemented("session", "F-002..F-005");
+            Console.Error.WriteLine("Usage: bp-log-viewer session <list|get|log|errors> [options]");
+            return 0;
         }
 
         return subArgs[0] switch
@@ -166,7 +156,8 @@ public static class Program
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
-            return NotYetImplemented("resource", "F-006");
+            Console.Error.WriteLine("Usage: bp-log-viewer resource list [options]");
+            return 0;
         }
 
         return subArgs[0] switch
@@ -180,7 +171,8 @@ public static class Program
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
-            return NotYetImplemented("process", "F-007");
+            Console.Error.WriteLine("Usage: bp-log-viewer process list [options]");
+            return 0;
         }
 
         return subArgs[0] switch
@@ -193,7 +185,8 @@ public static class Program
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
-            return NotYetImplemented("queue", "F-008, F-009");
+            Console.Error.WriteLine("Usage: bp-log-viewer queue <list|items> [options]");
+            return 0;
         }
 
         return subArgs[0] switch
@@ -208,7 +201,8 @@ public static class Program
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
-            return NotYetImplemented("audit", "F-010");
+            Console.Error.WriteLine("Usage: bp-log-viewer audit list [options]");
+            return 0;
         }
 
         return subArgs[0] switch

@@ -2,8 +2,8 @@ namespace BpLogViewer.Cli.Configuration;
 
 /// <summary>
 /// Zentrale Pfad-Resolution. Anker ist <c>AppContext.BaseDirectory</c> (NICHT
-/// <c>Environment.CurrentDirectory</c>) — der KI-Agent spawnt die Binary mit
-/// fremdem CWD (siehe Skill <c>dotnet-config-path-anchoring</c> + architecture § 4.2).
+/// <c>Environment.CurrentDirectory</c>) — die Binary kann mit fremdem CWD gespawnt werden
+/// (z. B. wenn ein KI-Agent sie über einen absoluten Pfad aufruft).
 /// </summary>
 public static class PathResolver
 {

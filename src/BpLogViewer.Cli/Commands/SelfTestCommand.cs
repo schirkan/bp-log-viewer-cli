@@ -13,7 +13,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer self-test</c> — Sanity-Check (F-014).
+/// <c>bp-log-viewer self-test</c> — Sanity-Check.
 /// </summary>
 public static class SelfTestCommand
 {
@@ -167,8 +167,7 @@ public static class SelfTestCommand
         catch (Exception ex)
         {
             // DB-Lookup fehlgeschlagen — Fallback auf Registry, aber Warnung ausgeben,
-            // damit der KI-Konsument den Diagnose-Pfad nachvollziehen kann
-            // (Code-Review-Finding C7).
+            // damit der Konsument den Diagnose-Pfad nachvollziehen kann.
             ErrorWriter.WriteWarningAsync("bp_version_db_lookup_failed", ex.Message).GetAwaiter().GetResult();
         }
 
@@ -262,11 +261,39 @@ public static class SelfTestCommand
     }
 
     /// <summary>
-    /// Saubere JSON-Stringification für die jsonl-Ausgabe (statt naivem
-    /// <c>Replace</c>-Chain, der bei JSON-Strings in den Daten kaputt gehen kann).
+    /// Escaped einen String für die Einbettung in ein JSON-Literal (ohne
+    /// umschließende Anführungszeichen). Das ist NICHT dasselbe wie
+    /// <c>JsonSerializer.Serialize(value)</c> — Letzteres liefert eine
+    /// vollständige JSON-String-Repräsentation MIT Anführungszeichen, was
+    /// bei Einbettung in einen größeren JSON-String zu Doppel-Quotes
+    /// (z. B. <c>""value""</c>) und damit zu ungültigem JSON führt.
     /// </summary>
     private static string Escape(string value)
     {
-        return JsonSerializer.Serialize(value);
+        var sb = new System.Text.StringBuilder(value.Length + 8);
+        foreach (var c in value)
+        {
+            switch (c)
+            {
+                case '\\': sb.Append("\\\\"); break;
+                case '"': sb.Append("\\\""); break;
+                case '\n': sb.Append("\\n"); break;
+                case '\r': sb.Append("\\r"); break;
+                case '\t': sb.Append("\\t"); break;
+                case '\b': sb.Append("\\b"); break;
+                case '\f': sb.Append("\\f"); break;
+                default:
+                    if (c < 0x20)
+                    {
+                        sb.AppendFormat(System.Globalization.CultureInfo.InvariantCulture, "\\u{0:x4}", (int)c);
+                    }
+                    else
+                    {
+                        sb.Append(c);
+                    }
+                    break;
+            }
+        }
+        return sb.ToString();
     }
 }

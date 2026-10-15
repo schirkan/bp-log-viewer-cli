@@ -24,7 +24,7 @@ public sealed class QueueRepository
         while (reader.Read())
         {
             DateTimeOffset? oldestPending = reader.IsDBNull(12) ? null : DateTimeUtils.AssumeUtc(reader.GetDateTime(12));
-            // Stale-Schwellwert zentral in Configuration.QueueThresholds (Code-Review-Finding O6).
+            // Stale-Schwellwert zentral in Configuration.QueueThresholds.
             var stale = oldestPending.HasValue && oldestPending.Value < DateTimeOffset.UtcNow.AddHours(-Configuration.QueueThresholds.StalePendingThresholdHours);
 
             rows.Add(new QueueInfo(
@@ -52,6 +52,7 @@ public sealed class QueueRepository
     {
         using var conn = _context.CreateConnection();
         conn.Open();
+        // ORDER BY name für deterministisches Ergebnis bei (theoretisch) mehreren Queues mit gleichem Namen.
         // ORDER BY name für deterministisches Ergebnis bei (theoretisch) mehreren Queues mit gleichem Namen.
         using var cmd = new SqlCommand("SELECT TOP 1 id FROM BPAWorkQueue WHERE name=@name ORDER BY name", conn);
         cmd.Parameters.Add(new SqlParameter("@name", SqlDbType.NVarChar, 255) { Value = queueName });

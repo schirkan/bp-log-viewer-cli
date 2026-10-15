@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer session get</c> — Detailansicht einer einzelnen Session (F-003).
+/// <c>bp-log-viewer session get</c> — Detailansicht einer einzelnen Session.
 /// </summary>
 public static class SessionGetCommand
 {

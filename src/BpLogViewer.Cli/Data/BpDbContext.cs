@@ -6,7 +6,6 @@ namespace BpLogViewer.Cli.Data;
 /// <summary>
 /// Factory für <see cref="SqlConnection"/>. Wird pro Sub-Command einmal
 /// instanziert (Connection-Pooling übernimmt Microsoft.Data.SqlClient).
-/// Spec: <c>specs/feature-F-001-db-connection.md</c>.
 /// </summary>
 public sealed class BpDbContext : IDisposable
 {

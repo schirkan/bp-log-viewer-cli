@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer process list</c> (F-007).
+/// <c>bp-log-viewer process list</c>.
 /// </summary>
 public static class ProcessListCommand
 {

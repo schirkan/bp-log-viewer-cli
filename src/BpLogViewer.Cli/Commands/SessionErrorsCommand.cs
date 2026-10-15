@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer session errors</c> (F-005). Aggregate-Modus wird in der
+/// <c>bp-log-viewer session errors</c>. Aggregate-Modus wird in der
 /// Datenbank per SQL GROUP BY berechnet, um OOM bei großen Datenmengen zu vermeiden.
 /// </summary>
 public static class SessionErrorsCommand

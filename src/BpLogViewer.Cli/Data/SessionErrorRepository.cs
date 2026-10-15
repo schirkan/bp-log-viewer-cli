@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 namespace BpLogViewer.Cli.Data;
 
 /// <summary>
-/// Read-Repository für Session-Errors (F-005) mit optionaler SQL-Aggregation.
+/// Read-Repository für Session-Errors mit optionaler SQL-Aggregation.
 /// </summary>
 public sealed class SessionErrorRepository
 {

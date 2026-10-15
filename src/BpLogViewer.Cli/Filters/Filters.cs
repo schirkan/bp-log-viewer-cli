@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace BpLogViewer.Cli.Filters;
 
 /// <summary>
-/// Aggregated global options + filters. Spec: <c>specs/feature-F-011-common-filters.md</c>.
+/// Aggregated global options + filters.
 /// </summary>
 public sealed record Filters(
     DateTimeOffset? Since,
@@ -20,13 +20,13 @@ public sealed record Filters(
     string? Output,
     string? ConnectionString)
 {
-    /// <summary>Hard-Ceiling für <c>--max-rows</c> (architecture § 4.1 + § 8 Exit 8).</summary>
+    /// <summary>Hard-Ceiling für <c>--max-rows</c> (Exit 8 bei Überschreitung).</summary>
     public const int MaxRowsAbsoluteCeiling = 100_000;
 
-    /// <summary>Default-Wert für <c>--max-rows</c> wenn nicht angegeben (architecture § 4.1).</summary>
+    /// <summary>Default-Wert für <c>--max-rows</c> wenn nicht angegeben.</summary>
     public const int DefaultMaxRows = 1_000;
 
-    /// <summary>Default-Format (architecture § 4.1 + F-013).</summary>
+    /// <summary>Default-Format (jsonl).</summary>
     public const string DefaultFormat = "jsonl";
 
     public static Filters Empty { get; } = new(

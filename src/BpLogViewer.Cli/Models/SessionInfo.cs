@@ -1,7 +1,7 @@
 namespace BpLogViewer.Cli.Models;
 
 /// <summary>
-/// DTO für einen Datensatz aus <c>BPVSessionInfo</c> (F-002).
+/// DTO für einen Datensatz aus <c>BPVSessionInfo</c>.
 /// Property-Namen werden via Source-Generator in snake_case serialisiert.
 /// </summary>
 public sealed record SessionInfo(

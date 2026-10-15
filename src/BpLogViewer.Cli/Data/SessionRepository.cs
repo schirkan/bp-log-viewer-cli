@@ -5,8 +5,8 @@ using Microsoft.Data.SqlClient;
 namespace BpLogViewer.Cli.Data;
 
 /// <summary>
-/// Read-Repository für <c>BPVSessionInfo</c> (F-002) und Session-Details (F-003).
-/// Alle Queries sind parametrisiert (CWE-89-Schutz, architecture § 7.2).
+/// Read-Repository für <c>BPVSessionInfo</c> (Session-Liste und Session-Details).
+/// Alle Queries sind parametrisiert (Schutz vor SQL-Injection).
 /// </summary>
 public sealed class SessionRepository
 {

@@ -1,7 +1,7 @@
 namespace BpLogViewer.Cli.Models;
 
 /// <summary>
-/// Verknüpftes Queue-Item einer Session (F-003).
+/// Verknüpftes Queue-Item einer Session.
 /// </summary>
 public sealed record WorkQueueItemInfo(
     string? KeyValue,

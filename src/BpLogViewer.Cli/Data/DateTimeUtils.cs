@@ -9,8 +9,7 @@ namespace BpLogViewer.Cli.Data;
 /// Wir interpretieren sie als UTC, weil der typische BP-Server in UTC läuft
 /// und die Test-DB das so liefert. Falls die Production-DB eine andere
 /// Server-Timezone verwendet, gibt es eine stille +1/+2h-Drift; das ist eine
-/// bekannte Limitation und wird im Code-Review dokumentiert
-/// (<c>specs/README.md</c> § Known Limitations).
+/// bekannte Limitation.
 /// </para>
 /// </summary>
 internal static class DateTimeUtils

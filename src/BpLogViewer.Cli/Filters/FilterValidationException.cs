@@ -2,7 +2,7 @@ namespace BpLogViewer.Cli.Filters;
 
 /// <summary>
 /// Thrown by <see cref="FilterParser"/> for invalid global filter / option values.
-/// Carries the error code (for jsonl error envelope) and exit code (architecture § 8) directly.
+/// Carries the error code (for jsonl error envelope) and exit code directly.
 /// </summary>
 public sealed class FilterValidationException : Exception
 {

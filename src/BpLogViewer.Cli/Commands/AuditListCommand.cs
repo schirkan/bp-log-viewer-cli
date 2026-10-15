@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer audit list</c> (F-010).
+/// <c>bp-log-viewer audit list</c>.
 /// </summary>
 public static class AuditListCommand
 {

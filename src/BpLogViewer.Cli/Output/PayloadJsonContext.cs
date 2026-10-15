@@ -5,10 +5,9 @@ using BpLogViewer.Cli.Models;
 namespace BpLogViewer.Cli.Output;
 
 /// <summary>
-/// System.Text.Json Source-Generator Context (siehe Skill
-/// <c>dotnet-trimmed-binary-json-fix</c>). Alle per jsonl ausgegebenen Typen
+/// System.Text.Json Source-Generator Context. Alle per jsonl ausgegebenen Typen
 /// müssen hier mit <c>[JsonSerializable(typeof(T))]</c> registriert sein.
-/// Naming-Policy: <c>SnakeCaseLower</c> (KI-konform, F-013 § 6.1).
+/// Naming-Policy: <c>SnakeCaseLower</c>.
 /// </summary>
 [JsonSourceGenerationOptions(
     PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,

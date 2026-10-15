@@ -8,7 +8,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer session list</c> — listet Sessions aus <c>BPVSessionInfo</c> (F-002).
+/// <c>bp-log-viewer session list</c> — listet Sessions aus <c>BPVSessionInfo</c>.
 /// </summary>
 public static class SessionListCommand
 {
@@ -47,7 +47,7 @@ public static class SessionListCommand
         }
 
         // Pre-compute: einmal Dictionary bauen, dann O(1)-Lookups statt
-        // O(n) Cache-GetName-Calls in der Schleife (Code-Review-Finding C2).
+        // O(n) Cache-GetName-Calls in der Schleife.
         var allStatuses = new HashSet<int>();
         for (var i = 0; i < rows.Count; i++)
         {

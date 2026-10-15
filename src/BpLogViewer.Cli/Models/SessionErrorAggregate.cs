@@ -1,7 +1,7 @@
 namespace BpLogViewer.Cli.Models;
 
 /// <summary>
-/// Aggregierte Fehler-Sicht (F-005).
+/// Aggregierte Fehler-Sicht pro Exception-Typ.
 /// </summary>
 public sealed record SessionErrorAggregate(
     string ExceptionType,

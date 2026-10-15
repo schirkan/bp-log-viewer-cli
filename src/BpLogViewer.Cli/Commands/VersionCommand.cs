@@ -7,7 +7,6 @@ namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
 /// <c>bp-log-viewer version</c> — gibt CLI-Version, Build-Commit und Build-Datum als jsonl aus.
-/// Spec: <c>specs/feature-F-014-self-test.md</c> Sub-Command 1.
 /// </summary>
 public static class VersionCommand
 {

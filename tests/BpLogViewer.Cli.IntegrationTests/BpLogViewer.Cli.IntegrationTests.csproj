@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>BpLogViewer.Cli.IntegrationTests</RootNamespace>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <!--
+      This test project is deliberately NOT referenced by the release build.
+      The release workflow (.github/workflows/release-single-exe.yml) only
+      builds src/BpLogViewer.Cli/, so these tests never run during a release.
+      They require a real Blue Prism database (LocalDB or remote SQL Server)
+      and are meant to be run manually on a machine that has such an instance.
+    -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+    <PackageReference Include="xunit" Version="2.9.0" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\BpLogViewer.Cli\BpLogViewer.Cli.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,7 +1,7 @@
 namespace BpLogViewer.Cli.Models;
 
 /// <summary>
-/// Detail-Ansicht einer Session inklusive optionaler XML-Felder und Queue-Items (F-003).
+/// Detail-Ansicht einer Session inklusive optionaler XML-Felder und Queue-Items.
 /// </summary>
 public sealed record SessionDetails(
     int SessionNumber,

@@ -1,7 +1,7 @@
 namespace BpLogViewer.Cli.Models;
 
 /// <summary>
-/// Eine Log-Zeile aus BPASessionLog_NonUnicode/Unicode (F-004).
+/// Eine Log-Zeile aus <c>BPASessionLog_NonUnicode</c> / <c>BPASessionLog_Unicode</c>.
 /// </summary>
 public sealed record SessionLogEntry(
     long LogId,

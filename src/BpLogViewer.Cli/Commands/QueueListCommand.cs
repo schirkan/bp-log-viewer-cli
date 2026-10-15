@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer queue list</c> (F-008).
+/// <c>bp-log-viewer queue list</c>.
 /// </summary>
 public static class QueueListCommand
 {

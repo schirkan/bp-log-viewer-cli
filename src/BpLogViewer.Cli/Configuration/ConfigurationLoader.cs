@@ -4,7 +4,7 @@ namespace BpLogViewer.Cli.Configuration;
 
 /// <summary>
 /// Lädt <see cref="AppSettings"/> aus <c>appsettings.json</c> + ENV-Variablen
-/// + CLI-Override (architecture § 4.3 Override-Reihenfolge).
+/// + CLI-Override.
 /// </summary>
 /// <remarks>
 /// Sucht <c>appsettings.json</c> in dieser Reihenfolge:
@@ -33,13 +33,13 @@ public static class ConfigurationLoader
         builder.AddEnvironmentVariables(prefix: "BP_");
 
         var settings = new AppSettings();
-        // Wichtig: appsettings.json hat die Section "BpLogViewer" als Root.
+        // appsettings.json hat die Section "BpLogViewer" als Root.
         // ConfigurationBuilder.Bind bindet die Root-Section des IConfiguration
         // (die per Default leer ist), NICHT eine benannte Section. Deshalb
         // GetSection("BpLogViewer") vor dem Bind.
         builder.Build().GetSection("BpLogViewer").Bind(settings);
 
-        // Expliziter ENV-Override für Connection-String (architecture § 4.3)
+        // Expliziter ENV-Override für Connection-String
         var envConn = Environment.GetEnvironmentVariable("BP_DB_CONNECTION");
         if (!string.IsNullOrEmpty(envConn))
             settings.Database.ConnectionString = envConn;

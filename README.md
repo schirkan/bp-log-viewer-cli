@@ -4,7 +4,8 @@ Structured, AI-optimized console interface for the Blue Prism database (7.5.x).
 Direct DB access for error analysis and root cause research — without the slow
 official BP CLI.
 
-> **Status:** ✔️ Implementiert (Specs F-001 … F-014 umgesetzt).
+> **Status:** ✔️ Ready for use. All planned commands are implemented and tested against
+> a real Blue Prism 7.5.x database (LocalDB or remote SQL Server).
 
 ## License
 
@@ -33,7 +34,8 @@ bp-log-viewer queue items "MyQueue" --include-tags
 bp-log-viewer audit list --code RESSTART
 ```
 
-Alle Commands geben standardmäßig **jsonl** auf stdout aus; Warnings/Errors gehen als jsonl auf stderr.
+All commands emit **jsonl** on stdout by default; warnings and errors go as
+jsonl on stderr.
 
 ## Command overview
 
@@ -45,7 +47,7 @@ Alle Commands geben standardmäßig **jsonl** auf stdout aus; Warnings/Errors ge
 - `queue list|items`
 - `audit list`
 
-Globale Optionen (Auszug):
+Global options (excerpt):
 - `--connection-string`
 - `--output` / `--out-file`
 - `--max-rows`
@@ -53,17 +55,17 @@ Globale Optionen (Auszug):
 - `--process` / `--resource` / `--status`
 - `--text`
 
-## Architektur (Kurzfassung)
+## Architecture (short)
 
 - **Runtime:** .NET 8 self-contained single-file trimmed, win-x64
 - **DB driver:** `Microsoft.Data.SqlClient` 5.x (`BPA*`, `BPV*`)
 - **JSON:** `System.Text.Json` + Source Generator
-- **CLI parsing:** manueller Dispatcher (System.CommandLine-Workaround)
-- **Path resolution:** `PathResolver` auf Basis `AppContext.BaseDirectory`
+- **CLI parsing:** manual dispatcher (System.CommandLine workaround)
+- **Path resolution:** `PathResolver` anchored at `AppContext.BaseDirectory`
 
-## Publish (Single EXE)
+## Publish (single EXE)
 
-Lokaler Publish (Windows, self-contained, single-file, trimmed):
+Local publish (Windows, self-contained, single-file, trimmed):
 
 ```bash
 dotnet publish src/BpLogViewer.Cli/BpLogViewer.Cli.csproj \
@@ -76,36 +78,61 @@ dotnet publish src/BpLogViewer.Cli/BpLogViewer.Cli.csproj \
   -o out/win-x64
 ```
 
-Artefakt: `out/win-x64/bp-log-viewer.exe`
+Artifact: `out/win-x64/bp-log-viewer.exe`
 
 ## GitHub Release Build Flow
 
 Workflow: `.github/workflows/release-single-exe.yml`
 
 Trigger:
-- Tag-Push `v*` (z. B. `v0.1.0`)
-- optional manuell via `workflow_dispatch`
+- Tag push `v*` (e.g. `v0.1.0`)
+- optional manual via `workflow_dispatch`
 
-Ablauf:
+Steps:
 1. Restore + Build (`Release`)
-2. Publish als single-file EXE (`win-x64`, self-contained, trimmed)
-3. ZIP + SHA256 erzeugen
-4. GitHub Release erstellen/aktualisieren und beide Dateien anhängen
+2. Publish as single-file EXE (`win-x64`, self-contained, trimmed)
+3. ZIP + SHA256
+4. GitHub Release: create/update + attach both files
 
-## Documentation
+## Configuration
+
+Copy `appsettings.template.json` to `appsettings.json` next to the binary and
+fill in `Database.ConnectionString`. The connection string accepts any
+standard ADO.NET value (LocalDB, remote SQL Server, integrated auth, SQL
+auth — whatever your Blue Prism environment uses).
 
 | File | Purpose |
 |------|---------|
-| [`AGENTS.md`](AGENTS.md) | Project status, blockers, workboard-override decision |
-| [`specs/README.md`](specs/README.md) | Feature overview + status (single source of truth) |
-| [`specs/architecture.md`](specs/architecture.md) | Architecture spec |
-| [`specs/feature-F-*.md`](specs/) | Feature specs (F-001 … F-014) |
+| [`AGENTS.md`](AGENTS.md) | Project status and notes for sub-agents |
 | [`context/blue-prism-installation.md`](context/blue-prism-installation.md) | Local Blue Prism installation findings |
 | [`context/blue-prism-database-schema.md`](context/blue-prism-database-schema.md) | DB schema findings (213 objects) |
 | [`appsettings.template.json`](appsettings.template.json) | Configuration template (copy to `appsettings.json`) |
 
-## Project context
+## Testing
 
-This is a small, focused tool. Per Martin (project owner), the OpenClaw
-workboard is **deliberately not used** here; status and todo tracking run
-exclusively through `specs/README.md`.
+A separate test project lives under `tests/BpLogViewer.Cli.IntegrationTests/`.
+It requires a real Blue Prism database (LocalDB or remote). The tests do **not**
+mock the DB; they connect to a live instance and exercise the repositories and
+commands end-to-end.
+
+Setup:
+
+1. Copy `appsettings.template.json` to `src/BpLogViewer.Cli/appsettings.json`
+   and point it at your BP database.
+2. Build and run the test project:
+
+   ```bash
+   dotnet test tests/BpLogViewer.Cli.IntegrationTests/BpLogViewer.Cli.IntegrationTests.csproj
+   ```
+
+   By default the tests target the LocalDB instance configured in
+   `appsettings.json`. To target a different server, set
+   `BP_LOG_VIEWER_TEST_CONNECTION_STRING` in the environment, e.g.:
+
+   ```bash
+   export BP_LOG_VIEWER_TEST_CONNECTION_STRING="Server=myserver;Database=BluePrism;Integrated Security=true;TrustServerCertificate=true;Encrypt=false;"
+   dotnet test tests/BpLogViewer.Cli.IntegrationTests/BpLogViewer.Cli.IntegrationTests.csproj
+   ```
+
+The test project is **not** part of the release build. The release workflow
+only builds `src/BpLogViewer.Cli/`, so tests never run during a release.

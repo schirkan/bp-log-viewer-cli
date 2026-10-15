@@ -5,18 +5,18 @@ namespace BpLogViewer.Cli.Output;
 
 /// <summary>
 /// Schreibt Fehler und Warnungen als jsonl auf <c>Console.Error</c> —
-/// immer, unabhängig vom <c>--format</c> (F-013 § 6.3).
+/// immer, unabhängig vom <c>--format</c>.
 /// </summary>
 public static class ErrorWriter
 {
     static ErrorWriter()
     {
         // UTF-8 für stdout + stderr, damit Umlaute und andere Nicht-ASCII-Zeichen
-        // in Fehlermeldungen nicht korrumpiert werden (Code-Review-Finding O5).
-        // Auf Windows ist die Default-Encoding oft cp1252, was bei fehlerhaften
-        // Werten aus der DB zu kaputten Zeichen führt. Console.OutputEncoding
-        // setzt die Encoding für BEIDE (stdout + stderr) gleichzeitig, weil sie
-        // auf Windows denselben Console-Buffer nutzen.
+        // in Fehlermeldungen nicht korrumpiert werden. Auf Windows ist die
+        // Default-Encoding oft cp1252, was bei fehlerhaften Werten aus der DB
+        // zu kaputten Zeichen führt. Console.OutputEncoding setzt die Encoding
+        // für BEIDE (stdout + stderr) gleichzeitig, weil sie auf Windows
+        // denselben Console-Buffer nutzen.
         try
         {
             Console.InputEncoding = Encoding.UTF8;
@@ -30,7 +30,7 @@ public static class ErrorWriter
         }
     }
 
-    /// <summary>Ein Fehler-Objekt + Exit-Code (architecture § 8).</summary>
+    /// <summary>Ein Fehler-Objekt + Exit-Code.</summary>
     public static async Task WriteErrorAsync(string code, string message, int exitCode)
     {
         var envelope = new ErrorEnvelope(code, message, exitCode);
@@ -38,7 +38,7 @@ public static class ErrorWriter
         await Console.Error.WriteLineAsync(json);
     }
 
-    /// <summary>Eine Warnung (eine pro Zeile, architecture § 6.3).</summary>
+    /// <summary>Eine Warnung (eine pro Zeile).</summary>
     public static async Task WriteWarningAsync(string code, string detail)
     {
         var envelope = new WarningEnvelope(code, detail);

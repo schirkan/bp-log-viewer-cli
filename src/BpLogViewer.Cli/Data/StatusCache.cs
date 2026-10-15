@@ -5,8 +5,8 @@ namespace BpLogViewer.Cli.Data;
 
 /// <summary>
 /// Cached die <c>BPAStatus</c>-Tabelle (Status-Codes + Beschreibungen) zur
-/// Laufzeit. Ersetzt das hartkodierte Mapping aus F-002/004/005 (architecture § 4.5).
-/// Spec: <c>specs/feature-F-001-db-connection.md</c> § „Runtime-Lookup".
+/// Laufzeit. Ersetzt hartkodierte Mappings und liefert Name ↔ ID Lookups
+/// sowohl für numerische Codes als auch für textuelle Beschreibungen.
 /// </summary>
 public sealed class StatusCache
 {
