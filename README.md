@@ -58,12 +58,12 @@ Global options (excerpt):
 
 ## Agent skill and full CLI reference
 
-The [BP Log Viewer CLI skill](.github/skills/bp-log-viewer-cli/SKILL.md) provides
-an investigation workflow for agents. Its [complete parameter reference](.github/skills/bp-log-viewer-cli/references/cli-reference.md)
-(in German) documents every implemented command, filter scope, examples,
-configuration, output handling, exit codes, and current limitations.
-The [Blue Prism Operator agent](.github/agents/Blue%20Prism%20Operator.agent.md)
-uses this skill for error analysis.
+The companion agent and skill live in a separate repository:
+[**schirkan/BP-Agents**](https://github.com/schirkan/BP-Agents).
+
+- [BP Log Viewer CLI skill](https://github.com/schirkan/BP-Agents/blob/main/.github/skills/bp-log-viewer-cli/SKILL.md) — investigation workflow for agents
+- [Complete parameter reference (German)](https://github.com/schirkan/BP-Agents/blob/main/.github/skills/bp-log-viewer-cli/references/cli-reference.md) — every implemented command, filter scope, examples, configuration, output handling, exit codes, and current limitations
+- [Blue Prism Operator agent](https://github.com/schirkan/BP-Agents/blob/main/.github/agents/Blue%20Prism%20Operator.agent.md) — uses this skill for error analysis
 
 ## Architecture (short)
 

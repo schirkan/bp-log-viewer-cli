@@ -1,0 +1,8 @@
+chore: move agent and skill to separate BP-Agents repo
+
+The Blue Prism Operator agent and the BP Log Viewer CLI skill now live
+in https://github.com/schirkan/BP-Agents. This repo contains only the
+CLI itself.
+
+- Remove .github/agents/ and .github/skills/
+- Update README.md to point to the new locations
