@@ -80,6 +80,13 @@ The target system must have the .NET 8 Runtime (x64) installed; .NET Framework 4
 is not sufficient. The runtime is not bundled, reducing the executable size.
 Globalization support remains enabled because `Microsoft.Data.SqlClient` requires
 named cultures such as `en-US`; globalization-invariant mode is not supported.
+If the target system reports `Only the invariant culture is supported`, replace
+older executables with a build published from the current project settings (do
+not override `InvariantGlobalization` to `true`). Check the target environment
+for `DOTNET_SYSTEM_GLOBALIZATION_INVARIANT`; it must not enable invariant mode.
+This error is unrelated to the database credentials or the process filters.
+For example, `process list --type process --name-contains Health --max-rows 50`
+filters process names containing `Health`; these are supported command options.
 Trimming is disabled because the current SqlClient dependency causes a
 `TypeLoadException` during TLS login in the trimmed build.
 

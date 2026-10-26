@@ -19,7 +19,8 @@ public static class FilterParser
     };
 
     /// <summary>Parst <paramref name="args"/> in <see cref="Filters"/>. Wirft <see cref="FilterValidationException"/>.</summary>
-    public static Filters Parse(string[] args, Filters? defaults = null)
+    public static Filters Parse(string[] args, Filters? defaults = null,
+        IReadOnlyDictionary<string, bool>? commandOptions = null, int commandOptionsStartIndex = 0)
     {
         defaults ??= Filters.Empty;
         DateTimeOffset? since = defaults.Since;
@@ -38,6 +39,14 @@ public static class FilterParser
 
         for (int i = 0; i < args.Length; i++)
         {
+            if (i >= commandOptionsStartIndex && commandOptions is not null &&
+                commandOptions.TryGetValue(args[i], out var requiresValue))
+            {
+                if (requiresValue)
+                    _ = RequireValue(args, ref i, args[i]);
+                continue;
+            }
+
             switch (args[i])
             {
                 case "--since":

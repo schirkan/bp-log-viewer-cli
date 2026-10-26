@@ -145,6 +145,40 @@ public class ProgramDispatchTests
     }
 
     [Fact]
+    public void Main_ProcessListWithFilters_DoesNotWarnAboutCommandOptions()
+    {
+        _env.RequireDatabase();
+        var (rc, _, stderr) = CaptureMain(new[] { "process", "list", "--type", "process",
+            "--name-contains", "Health", "--max-rows", "50", "--connection-string", _env.ConnectionString });
+        Assert.True(rc is 0 or 2, stderr);
+        Assert.DoesNotContain("filter_unknown_option", stderr);
+        Assert.DoesNotContain("db_error", stderr);
+    }
+
+    [Theory]
+    [InlineData("--name")]
+    [InlineData("--name-contains")]
+    [InlineData("--type")]
+    [InlineData("--has-errors-since")]
+    public void Main_ProcessListMissingOptionValue_Returns11(string option)
+    {
+        var (rc, _, stderr) = CaptureMain(new[] { "process", "list", option });
+        Assert.Equal(11, rc);
+        Assert.Contains("requires a value", stderr);
+        Assert.DoesNotContain("filter_unknown_option", stderr);
+    }
+
+    [Fact]
+    public void Main_ProcessListInvalidType_StillValidatesAndWarnsAboutTypos()
+    {
+        var (rc, _, stderr) = CaptureMain(new[] { "process", "list", "--typo", "--type", "wrong" });
+        Assert.Equal(11, rc);
+        Assert.Contains("command_invalid", stderr);
+        Assert.Contains("--typo", stderr);
+        Assert.DoesNotContain("unrecognized global option '--type'", stderr);
+    }
+
+    [Fact]
     public void Main_QueueList_Returns0()
     {
         _env.RequireDatabase();

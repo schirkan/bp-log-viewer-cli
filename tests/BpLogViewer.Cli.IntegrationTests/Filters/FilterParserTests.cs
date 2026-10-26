@@ -83,6 +83,23 @@ public class FilterParserTests
     }
 
     [Fact]
+    public void Parse_CommandOptionValue_IsNotParsedAsGlobalOption()
+    {
+        var f = FilterParser.Parse(new[] { "--name-contains", "--verbose", "--max-rows", "50" },
+            commandOptions: new Dictionary<string, bool> { ["--name-contains"] = true });
+        Assert.False(f.Verbose);
+        Assert.Equal(50, f.MaxRows);
+    }
+
+    [Fact]
+    public void Parse_CommandFlag_DoesNotConsumeFollowingGlobalOption()
+    {
+        var f = FilterParser.Parse(new[] { "--aggregate", "--max-rows", "50" },
+            commandOptions: new Dictionary<string, bool> { ["--aggregate"] = false });
+        Assert.Equal(50, f.MaxRows);
+    }
+
+    [Fact]
     public void Parse_InvalidLevel_Throws()
     {
         var ex = Assert.Throws<FilterValidationException>(

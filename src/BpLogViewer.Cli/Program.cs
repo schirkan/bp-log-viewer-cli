@@ -30,14 +30,11 @@ public static class Program
             // Split: globale Optionen (vor Sub-Command) | Sub-Command | Sub-Command-Args
             var (subCommand, globalArgs, subArgs) = SplitArgs(args);
 
-            // Globale Filter/Optionen validieren. Wichtig: globale Optionen
-            // werden aus ALLEN Args geparst (nicht nur globalArgs), damit z. B.
-            // "process list --max-rows 1" genauso funktioniert wie
-            // "--max-rows 1 process list". Der Sub-Command-Name und Sub-Args
-            // werden von FilterParser ignoriert (siehe default-Branch).
-            // Sub-Args werden vom jeweiligen Command-Parser verarbeitet, der
-            // globale Optionen via FilterParser.OptionsWithValue überspringt.
-            var filters = FilterParser.Parse(args);
+            // Globale Optionen bleiben vor und nach dem Command gültig.
+            // Command-Optionen inklusive ihrer Werte dürfen dabei nicht als globale Filter gelten.
+            var filters = FilterParser.Parse(args,
+                commandOptions: GetCommandOptions(subCommand, subArgs.FirstOrDefault()),
+                commandOptionsStartIndex: globalArgs.Length + 1);
 
             // Version-Flag wird gegen die bereits geparsten globalen Args geprüft,
             // damit "session list --version" korrekt als unknown_command behandelt wird
@@ -103,6 +100,26 @@ public static class Program
 
         // Kein Sub-Command — alle Args sind global
         return ("", args, Array.Empty<string>());
+    }
+
+    private static IReadOnlyDictionary<string, bool> GetCommandOptions(string command, string? action)
+    {
+        var (values, flags) = (command, action) switch
+        {
+            ("process", "list") => (new[] { "--name", "--name-contains", "--type", "--has-errors-since" }, Array.Empty<string>()),
+            ("resource", "list") => (new[] { "--name", "--name-contains" }, Array.Empty<string>()),
+            ("queue", "list") => (new[] { "--name", "--name-contains" }, new[] { "--only-exceptions", "--only-running" }),
+            ("queue", "items") => (new[] { "--queue-id" }, new[] { "--include-tags", "--full-data" }),
+            ("session", "get") => (new[] { "--session-id" }, new[] { "--include-state-xml" }),
+            ("session", "log") => (new[] { "--stage" }, new[] { "--full-result" }),
+            ("session", "errors") => (new[] { "--exception-type" }, new[] { "--aggregate" }),
+            ("audit", "list") => (new[] { "--code", "--user", "--target-process", "--target-resource" }, new[] { "--include-xml", "--full-comments" }),
+            _ => (Array.Empty<string>(), Array.Empty<string>())
+        };
+        var options = new Dictionary<string, bool>(StringComparer.Ordinal);
+        foreach (var option in values) options.Add(option, true);
+        foreach (var option in flags) options.Add(option, false);
+        return options;
     }
 
     private static int PrintRootHelp()
