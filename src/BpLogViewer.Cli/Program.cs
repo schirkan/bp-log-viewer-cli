@@ -1,4 +1,5 @@
 using BpLogViewer.Cli.Commands;
+using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Filters;
 using BpLogViewer.Cli.Output;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
@@ -6,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli;
 
 /// <summary>
-/// Entry point for the BP Log Viewer CLI.
+/// Entry point for the BP Log Viewer CLI. Returns the CLI exit code.
 /// </summary>
 /// <remarks>
 /// Verwendet einen minimalen manuellen Dispatcher statt System.CommandLine,
@@ -28,13 +29,13 @@ public static class Program
             }
 
             // Split: globale Optionen (vor Sub-Command) | Sub-Command | Sub-Command-Args
-            var (subCommand, globalArgs, subArgs) = SplitArgs(args);
+            var (subCommand, globalArgs, subArgs, commandOptionsStartIndex) = SplitArgs(args);
 
             // Globale Optionen bleiben vor und nach dem Command gültig.
             // Command-Optionen inklusive ihrer Werte dürfen dabei nicht als globale Filter gelten.
             var filters = FilterParser.Parse(args,
-                commandOptions: GetCommandOptions(subCommand, subArgs.FirstOrDefault()),
-                commandOptionsStartIndex: globalArgs.Length + 1);
+                commandOptions: OptionRegistry.ForCommand(subCommand, subArgs.FirstOrDefault()),
+                commandOptionsStartIndex: commandOptionsStartIndex);
 
             // Version-Flag wird gegen die bereits geparsten globalen Args geprüft,
             // damit "session list --version" korrekt als unknown_command behandelt wird
@@ -68,23 +69,18 @@ public static class Program
     }
 
     /// <summary>
-    /// Trennt <paramref name="args"/> in (Sub-Command-Name, globale Args, Sub-Command-Args).
-    /// Das erste Argument, das nicht mit <c>--</c> oder <c>-</c> beginnt, ist der Sub-Command.
+    /// Trennt <paramref name="args"/> in (Sub-Command-Name, globale Args, Sub-Command-Args,
+    /// Startindex der Command-Optionen). Das erste Argument, das nicht mit <c>--</c> oder
+    /// <c>-</c> beginnt, ist der Sub-Command.
     /// </summary>
-    private static (string subCommand, string[] globalArgs, string[] subArgs) SplitArgs(string[] args)
+    private static (string subCommand, string[] globalArgs, string[] subArgs, int commandOptionsStartIndex) SplitArgs(string[] args)
     {
         // Globale Optionen mit Value dürfen nicht als Sub-Command interpretiert werden.
         // Beispiel: --max-rows 1000 version
-        var optionsWithValue = new HashSet<string>(StringComparer.Ordinal)
-        {
-            "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
-            "--max-rows", "--format", "--output", "--out-file", "--connection-string"
-        };
-
         for (int i = 0; i < args.Length; i++)
         {
             var token = args[i];
-            if (optionsWithValue.Contains(token))
+            if (OptionRegistry.GlobalOptionsWithValue.Contains(token))
             {
                 i++; // zugehörigen Wert überspringen
                 continue;
@@ -95,36 +91,19 @@ public static class Program
                 continue;
             }
 
-            return (token, args[..i], args[(i + 1)..]);
+            // Der Sub-Command steht an Index i, die Action an i + 1. Command-Optionen
+            // werden ab i + 1 erkannt, damit die Werte von Command-Optionen nicht als
+            // globale Filter gelesen werden.
+            return (token, args[..i], args[(i + 1)..], i + 1);
         }
 
-        // Kein Sub-Command — alle Args sind global
-        return ("", args, Array.Empty<string>());
-    }
-
-    private static IReadOnlyDictionary<string, bool> GetCommandOptions(string command, string? action)
-    {
-        var (values, flags) = (command, action) switch
-        {
-            ("process", "list") => (new[] { "--name", "--name-contains", "--type", "--has-errors-since" }, Array.Empty<string>()),
-            ("resource", "list") => (new[] { "--name", "--name-contains" }, Array.Empty<string>()),
-            ("queue", "list") => (new[] { "--name", "--name-contains" }, new[] { "--only-exceptions", "--only-running" }),
-            ("queue", "items") => (new[] { "--queue-id" }, new[] { "--include-tags", "--full-data" }),
-            ("session", "get") => (new[] { "--session-id" }, new[] { "--include-state-xml" }),
-            ("session", "log") => (new[] { "--stage" }, new[] { "--full-result" }),
-            ("session", "errors") => (new[] { "--exception-type" }, new[] { "--aggregate" }),
-            ("audit", "list") => (new[] { "--code", "--user", "--target-process", "--target-resource" }, new[] { "--include-xml", "--full-comments" }),
-            _ => (Array.Empty<string>(), Array.Empty<string>())
-        };
-        var options = new Dictionary<string, bool>(StringComparer.Ordinal);
-        foreach (var option in values) options.Add(option, true);
-        foreach (var option in flags) options.Add(option, false);
-        return options;
+        // Kein Sub-Command - alle Args sind global
+        return ("", args, Array.Empty<string>(), args.Length);
     }
 
     private static int PrintRootHelp()
     {
-        Console.Error.WriteLine("bp-log-viewer — Structured, AI-friendly log access to Blue Prism 7.5.x database");
+        Console.Error.WriteLine("bp-log-viewer - Structured, AI-friendly log access to Blue Prism 7.5.x database");
         Console.Error.WriteLine("");
         Console.Error.WriteLine("Usage: bp-log-viewer [global-options] <command> [command-options]");
         Console.Error.WriteLine("");
@@ -198,6 +177,7 @@ public static class Program
             _ => UnknownCommand($"process {subArgs[0]}")
         };
     }
+
     private static int DispatchQueue(string[] subArgs, FilterSet filters)
     {
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")

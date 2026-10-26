@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Output;
 
 namespace BpLogViewer.Cli.Filters;
@@ -11,16 +12,25 @@ namespace BpLogViewer.Cli.Filters;
 /// </summary>
 public static class FilterParser
 {
-    /// <summary>Globale Optionen mit Value (für Single-Pass-Parsing im Dispatcher).</summary>
-    public static readonly IReadOnlySet<string> OptionsWithValue = new HashSet<string>(StringComparer.Ordinal)
-    {
-        "--since", "--until", "--process", "--resource", "--status", "--level", "--text",
-        "--max-rows", "--format", "--output", "--out-file", "--connection-string"
-    };
+    /// <summary>
+    /// Globale Optionen mit Value (für Single-Pass-Parsing im Dispatcher).
+    /// Quelle der Wahrheit ist <see cref="OptionRegistry"/>.
+    /// </summary>
+    public static IReadOnlySet<string> OptionsWithValue => OptionRegistry.GlobalOptionsWithValue;
 
     /// <summary>Parst <paramref name="args"/> in <see cref="Filters"/>. Wirft <see cref="FilterValidationException"/>.</summary>
+    /// <param name="args">Vollständige Argumentliste.</param>
+    /// <param name="defaults">Vorbelegte Filterwerte.</param>
+    /// <param name="commandOptions">
+    /// Command-spezifische Optionen des aktiven Commands inkl. Arity. Deren Werte
+    /// dürfen nicht als globale Filter gelesen werden.
+    /// </param>
+    /// <param name="commandOptionsStartIndex">
+    /// Index in <paramref name="args"/>, ab dem Command-Optionen erkannt werden.
+    /// Liefert <see cref="Program.SplitArgs"/> mit, damit die Kopplung eindeutig bleibt.
+    /// </param>
     public static Filters Parse(string[] args, Filters? defaults = null,
-        IReadOnlyDictionary<string, bool>? commandOptions = null, int commandOptionsStartIndex = 0)
+        IReadOnlyDictionary<string, OptionArity>? commandOptions = null, int commandOptionsStartIndex = 0)
     {
         defaults ??= Filters.Empty;
         DateTimeOffset? since = defaults.Since;
@@ -40,9 +50,10 @@ public static class FilterParser
         for (int i = 0; i < args.Length; i++)
         {
             if (i >= commandOptionsStartIndex && commandOptions is not null &&
-                commandOptions.TryGetValue(args[i], out var requiresValue))
+                commandOptions.TryGetValue(args[i], out var commandArity))
             {
-                if (requiresValue)
+                // Command-Optionen und ihre Werte gehören nicht zu den globalen Filtern.
+                if (commandArity == OptionArity.Value)
                     _ = RequireValue(args, ref i, args[i]);
                 continue;
             }
@@ -161,7 +172,7 @@ public static class FilterParser
             ConnectionString: connectionString);
     }
 
-    /// <summary>ISO-8601 mit/ohne Offset. Ohne Offset → UTC.</summary>
+    /// <summary>ISO-8601 mit/ohne Offset. Ohne Offset \x1a UTC.</summary>
     private static DateTimeOffset ParseIsoDate(string value)
     {
         if (DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var dto))

@@ -48,39 +48,14 @@ public static class AuditListCommand
         out bool includeXml,
         out bool fullComments)
     {
-        var codeList = new List<string>();
-        user = null;
-        targetProcess = null;
-        targetResource = null;
-        includeXml = false;
-        fullComments = false;
+        var parsed = CommandArgs.Parse(args, "audit", "list");
 
-        for (var i = 0; i < args.Length; i++)
-        {
-            if (args[i] == "--code" && i + 1 < args.Length)
-            {
-                codeList.Add(args[++i]);
-                continue;
-            }
-            if (args[i] == "--user" && i + 1 < args.Length)
-            {
-                user = args[++i];
-                continue;
-            }
-            if (args[i] == "--target-process" && i + 1 < args.Length)
-            {
-                targetProcess = args[++i];
-                continue;
-            }
-            if (args[i] == "--target-resource" && i + 1 < args.Length)
-            {
-                targetResource = args[++i];
-                continue;
-            }
-            if (args[i] == "--include-xml") { includeXml = true; continue; }
-            if (args[i] == "--full-comments") { fullComments = true; }
-        }
-
+        var codeList = parsed.Values("--code");
         codes = codeList.Count > 0 ? codeList.ToArray() : null;
+        user = parsed.Value("--user");
+        targetProcess = parsed.Value("--target-process");
+        targetResource = parsed.Value("--target-resource");
+        includeXml = parsed.HasFlag("--include-xml");
+        fullComments = parsed.HasFlag("--full-comments");
     }
 }

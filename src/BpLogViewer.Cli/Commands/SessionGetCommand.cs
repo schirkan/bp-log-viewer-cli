@@ -7,7 +7,7 @@ using FilterSet = BpLogViewer.Cli.Filters.Filters;
 namespace BpLogViewer.Cli.Commands;
 
 /// <summary>
-/// <c>bp-log-viewer session get</c> — Detailansicht einer einzelnen Session.
+/// <c>bp-log-viewer session get</c> - Detailansicht einer einzelnen Session.
 /// </summary>
 public static class SessionGetCommand
 {
@@ -74,49 +74,32 @@ public static class SessionGetCommand
     {
         int? sessionNumber = null;
         Guid? sessionId = null;
-        var includeStateXml = false;
 
-        for (var i = 0; i < args.Length; i++)
+        var parsed = CommandArgs.Parse(args, "session", "get");
+        if (parsed.Error is not null)
         {
-            var token = args[i];
+            query = default;
+            error = parsed.Error;
+            return false;
+        }
 
-            if (token == "--include-state-xml")
+        var includeStateXml = parsed.HasFlag("--include-state-xml");
+
+        var sessionIdValue = parsed.Value("--session-id");
+        if (sessionIdValue is not null)
+        {
+            if (!Guid.TryParse(sessionIdValue, out var parsedId))
             {
-                includeStateXml = true;
-                continue;
+                query = default;
+                error = $"invalid --session-id: '{sessionIdValue}'";
+                return false;
             }
 
-            if (token == "--session-id")
-            {
-                if (i + 1 >= args.Length)
-                {
-                    query = default;
-                    error = "--session-id requires a value";
-                    return false;
-                }
+            sessionId = parsedId;
+        }
 
-                var value = args[++i];
-                if (!Guid.TryParse(value, out var parsedId))
-                {
-                    query = default;
-                    error = $"invalid --session-id: '{value}'";
-                    return false;
-                }
-                sessionId = parsedId;
-                continue;
-            }
-
-            if (FilterParser.OptionsWithValue.Contains(token))
-            {
-                i++; // globaler Option-Wert
-                continue;
-            }
-
-            if (token.StartsWith("-", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
+        foreach (var token in parsed.Positional)
+        {
             if (sessionNumber.HasValue)
             {
                 query = default;

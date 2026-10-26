@@ -43,28 +43,17 @@ public static class QueueListCommand
         onlyExceptions = false;
         onlyRunning = false;
 
-        for (var i = 0; i < args.Length; i++)
+        var parsed = CommandArgs.Parse(args, "queue", "list");
+        if (parsed.Error is not null)
         {
-            if (args[i] == "--name" && i + 1 < args.Length)
-            {
-                name = args[++i];
-                continue;
-            }
-            if (args[i] == "--name-contains" && i + 1 < args.Length)
-            {
-                name = args[++i];
-                nameContains = true;
-                continue;
-            }
-            if (args[i] == "--only-exceptions")
-            {
-                onlyExceptions = true;
-                continue;
-            }
-            if (args[i] == "--only-running")
-            {
-                onlyRunning = true;
-            }
+            return;
         }
+
+        // --name und --name-contains teilen sich den Namensfilter; das zuletzt
+        // angegebene gewinnt.
+        name = parsed.LastValue("--name", "--name-contains");
+        nameContains = parsed.Values("--name-contains").Count > 0;
+        onlyExceptions = parsed.HasFlag("--only-exceptions");
+        onlyRunning = parsed.HasFlag("--only-running");
     }
 }

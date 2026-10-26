@@ -72,45 +72,33 @@ public static class QueueItemsCommand
         fullData = false;
         error = null;
 
-        var statusList = new List<string>();
-
-        for (var i = 0; i < args.Length; i++)
+        var parsed = CommandArgs.Parse(args, "queue", "items");
+        if (parsed.Error is not null)
         {
-            var token = args[i];
-            if (token == "--include-tags") { includeTags = true; continue; }
-            if (token == "--full-data") { fullData = true; continue; }
-
-            if (token == "--queue-id")
-            {
-                if (i + 1 >= args.Length || !Guid.TryParse(args[++i], out var parsedId))
-                {
-                    error = "invalid --queue-id";
-                    return false;
-                }
-                queueId = parsedId;
-                continue;
-            }
-
-            if (token == "--status")
-            {
-                if (i + 1 >= args.Length)
-                {
-                    error = "--status requires a value";
-                    return false;
-                }
-                statusList.Add(args[++i]);
-                continue;
-            }
-
-            if (FilterParser.OptionsWithValue.Contains(token))
-            {
-                i++; // globaler Option-Wert
-                continue;
-            }
-
-            if (token.StartsWith('-')) continue;
-            queueName ??= token;
+            error = parsed.Error;
+            return false;
         }
+
+        includeTags = parsed.HasFlag("--include-tags");
+        fullData = parsed.HasFlag("--full-data");
+
+        var queueIdValue = parsed.Value("--queue-id");
+        if (queueIdValue is not null)
+        {
+            if (!Guid.TryParse(queueIdValue, out var parsedId))
+            {
+                error = "invalid --queue-id";
+                return false;
+            }
+
+            queueId = parsedId;
+        }
+
+        // --status ist zugleich globale Option und Filter dieses Commands.
+        var statusList = parsed.Values("--status");
+        statuses = statusList.Count > 0 ? statusList.ToArray() : null;
+
+        queueName = parsed.Positional.Count > 0 ? parsed.Positional[0] : null;
 
         if (!string.IsNullOrWhiteSpace(queueName) && queueId.HasValue)
         {
@@ -124,7 +112,6 @@ public static class QueueItemsCommand
             return false;
         }
 
-        statuses = statusList.Count > 0 ? statusList.ToArray() : null;
         return true;
     }
 }

@@ -63,24 +63,10 @@ public static class SessionErrorsCommand
 
     private static void ParseArgs(string[] args, out bool aggregate, out string[]? exceptionTypes)
     {
-        aggregate = false;
-        var list = new List<string>();
+        var parsed = CommandArgs.Parse(args, "session", "errors");
+        aggregate = parsed.HasFlag("--aggregate");
 
-        for (var i = 0; i < args.Length; i++)
-        {
-            var token = args[i];
-            if (token == "--aggregate")
-            {
-                aggregate = true;
-                continue;
-            }
-
-            if (token == "--exception-type" && i + 1 < args.Length)
-            {
-                list.Add(args[++i]);
-            }
-        }
-
+        var list = parsed.Values("--exception-type");
         exceptionTypes = list.Count > 0 ? list.ToArray() : null;
     }
 }

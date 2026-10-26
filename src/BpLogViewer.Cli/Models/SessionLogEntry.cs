@@ -9,7 +9,7 @@ namespace BpLogViewer.Cli.Models;
 [JsonConverter(typeof(SessionLogEntryJsonConverter))]
 public sealed record SessionLogEntry(
     long LogId,
-    [property: JsonIgnore] string SourceTable,
+    string SourceTable,
     string? StageName,
     int? StageType,
     int? ResultType,

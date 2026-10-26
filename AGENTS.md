@@ -21,6 +21,8 @@
 
 - All planned commands implemented and verified against a real Blue Prism 7.5.x database.
 - Code review pass 1-4 completed; all findings fixed.
+- The CLI option vocabulary lives in one place (`src/BpLogViewer.Cli/Configuration/OptionRegistry.cs`); the dispatcher, the filter parser and every command read it from there. New options must be declared there only.
+- `session log` emits compact JSONL arrays (header line with the column names, then one array per entry).
 - Release workflow (`.github/workflows/release-single-exe.yml`) ships a framework-dependent single-file EXE + SHA256 as GitHub Release assets on tag `v*`.
 - Latest release: see [GitHub Releases](https://github.com/schirkan/bp-log-viewer-cli/releases).
 
@@ -60,7 +62,7 @@ These points came up during code review and live as ongoing refinements (no bloc
 |---|:------|
 | IN-1 | `BPAExceptionType` has only 2 columns (`id`, `type`); several places assumed `description`/`detail`. DB column validation per query. |
 | IN-2 | `processxml` from `BPAProcess` and `sessionstatexml` from `BPASession` are opt-in via flag (no "never" / no default emission). |
-| IN-3 | Tests live in `tests/BpLogViewer.Cli.IntegrationTests/`; they require a real BP database and do not mock the DB. |
+| IN-3 | Tests live in `tests/BpLogViewer.Cli.IntegrationTests/`; they require a real BP database and do not mock the DB. They run serially (`AssemblyInfo.cs`) because `Console` and environment variables are process-global; parallel runs let one test write into another test's captured buffer. |
 | IN-4 | License is MIT, no contributor setup yet (CONTRIBUTING.md, issue templates) — future work. |
 | IN-5 | `appsettings.template.json` is the versioned template; local `appsettings.json` (with the real connection string) is gitignored. |
 | IN-6 | `audit summary` (aggregated audit events) is a possible future command. |

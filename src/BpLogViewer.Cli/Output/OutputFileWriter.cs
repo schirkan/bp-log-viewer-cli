@@ -34,19 +34,22 @@ public static class OutputFileWriter
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             using (var writer = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
             {
+                // WriteLine schreibt die plattformspezifische Zeilenende-Sequenz
+                // (Windows CRLF = 2 Byte, Unix LF = 1 Byte). Für den Byte-Zähler muss
+                // die tatsächliche Länge verwendet werden, sonst wird der Wert zu klein.
+                var newlineBytes = Encoding.UTF8.GetByteCount(writer.NewLine);
+
                 if (headerJson is not null)
                 {
                     writer.WriteLine(headerJson);
-                    bytes += Encoding.UTF8.GetByteCount(headerJson) + 1;
+                    bytes += Encoding.UTF8.GetByteCount(headerJson) + newlineBytes;
                 }
 
                 foreach (var row in rows)
                 {
                     var json = JsonSerializer.Serialize(row, typeInfo);
                     writer.WriteLine(json);
-                    // UTF-8 Bytes + 1 für Newline. Auf Windows = 2 (CRLF), auf Linux = 1 (LF).
-                    // Wir nehmen +1 als Worst-Case; im Marker wird das nicht ausgewiesen.
-                    bytes += Encoding.UTF8.GetByteCount(json) + 1;
+                    bytes += Encoding.UTF8.GetByteCount(json) + newlineBytes;
                 }
             }
 

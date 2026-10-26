@@ -1,3 +1,4 @@
+using BpLogViewer.Cli.Configuration;
 using BpLogViewer.Cli.Filters;
 using Xunit;
 using FilterSet = BpLogViewer.Cli.Filters.Filters;
@@ -86,7 +87,7 @@ public class FilterParserTests
     public void Parse_CommandOptionValue_IsNotParsedAsGlobalOption()
     {
         var f = FilterParser.Parse(new[] { "--name-contains", "--verbose", "--max-rows", "50" },
-            commandOptions: new Dictionary<string, bool> { ["--name-contains"] = true });
+            commandOptions: new Dictionary<string, OptionArity> { ["--name-contains"] = OptionArity.Value });
         Assert.False(f.Verbose);
         Assert.Equal(50, f.MaxRows);
     }
@@ -95,7 +96,7 @@ public class FilterParserTests
     public void Parse_CommandFlag_DoesNotConsumeFollowingGlobalOption()
     {
         var f = FilterParser.Parse(new[] { "--aggregate", "--max-rows", "50" },
-            commandOptions: new Dictionary<string, bool> { ["--aggregate"] = false });
+            commandOptions: new Dictionary<string, OptionArity> { ["--aggregate"] = OptionArity.Flag });
         Assert.Equal(50, f.MaxRows);
     }
 

@@ -136,43 +136,20 @@ public static class SessionLogCommand
     private static bool TryParseArgs(string[] args, out SessionLogQuery? query, out string? error)
     {
         int? sessionNumber = null;
-        string? stage = null;
-        var fullResult = false;
 
-        for (var i = 0; i < args.Length; i++)
+        var parsed = CommandArgs.Parse(args, "session", "log");
+        if (parsed.Error is not null)
         {
-            var token = args[i];
+            query = null;
+            error = parsed.Error;
+            return false;
+        }
 
-            if (token == "--full-result")
-            {
-                fullResult = true;
-                continue;
-            }
+        var stage = parsed.Value("--stage");
+        var fullResult = parsed.HasFlag("--full-result");
 
-            if (token == "--stage")
-            {
-                if (i + 1 >= args.Length)
-                {
-                    query = null;
-                    error = "--stage requires a value";
-                    return false;
-                }
-
-                stage = args[++i];
-                continue;
-            }
-
-            if (FilterParser.OptionsWithValue.Contains(token))
-            {
-                i++; // globaler Option-Wert
-                continue;
-            }
-
-            if (token.StartsWith("-", StringComparison.Ordinal))
-            {
-                continue;
-            }
-
+        foreach (var token in parsed.Positional)
+        {
             if (sessionNumber.HasValue)
             {
                 query = null;
@@ -180,14 +157,14 @@ public static class SessionLogCommand
                 return false;
             }
 
-            if (!int.TryParse(token, out var parsed) || parsed <= 0)
+            if (!int.TryParse(token, out var parsedNumber) || parsedNumber <= 0)
             {
                 query = null;
                 error = $"invalid session number: '{token}'";
                 return false;
             }
 
-            sessionNumber = parsed;
+            sessionNumber = parsedNumber;
         }
 
         if (!sessionNumber.HasValue)

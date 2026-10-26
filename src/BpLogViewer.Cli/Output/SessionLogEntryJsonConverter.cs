@@ -4,12 +4,34 @@ using BpLogViewer.Cli.Models;
 
 namespace BpLogViewer.Cli.Output;
 
+/// <summary>
+/// Writes session log entries as compact JSONL arrays: one header line with the
+/// column names, then one array per entry in the same column order.
+/// </summary>
 public sealed class SessionLogEntryJsonConverter : JsonConverter<SessionLogEntry>
 {
-    public const string HeaderJson = "[\"log_id\",\"started_at\",\"stage_name\",\"stage_type\",\"result_type\",\"result_type_name\",\"result_preview\",\"attribute_size_bytes\"]";
+    /// <summary>
+    /// Column names in output order. Header line and array positions belong together,
+    /// so both are derived from this single list.
+    /// </summary>
+    public static readonly IReadOnlyList<string> ColumnNames = new[]
+    {
+        "log_id",
+        "started_at",
+        "stage_name",
+        "stage_type",
+        "result_type",
+        "result_type_name",
+        "result_preview",
+        "attribute_size_bytes",
+    };
+
+    /// <summary>First line of the jsonl output: the column names as JSON array.</summary>
+    public static readonly string HeaderJson =
+        "[" + string.Join(",", ColumnNames.Select(name => "\"" + name + "\"")) + "]";
 
     public override SessionLogEntry Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-        => throw new NotSupportedException("Session log entries are output-only.");
+        => throw new JsonException("Session log entries are output-only.");
 
     public override void Write(Utf8JsonWriter writer, SessionLogEntry value, JsonSerializerOptions options)
     {

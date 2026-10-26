@@ -54,43 +54,41 @@ public static class ProcessListCommand
         hasErrorsSince = null;
         error = null;
 
-        for (var i = 0; i < args.Length; i++)
+        var parsed = CommandArgs.Parse(args, "process", "list");
+        if (parsed.Error is not null)
         {
-            if (args[i] == "--name" && i + 1 < args.Length)
+            error = parsed.Error;
+            return false;
+        }
+
+        // --name und --name-contains teilen sich den Namensfilter; das zuletzt
+        // angegebene gewinnt.
+        name = parsed.LastValue("--name", "--name-contains");
+        nameContains = parsed.Values("--name-contains").Count > 0;
+
+        var typeValue = parsed.Value("--type");
+        if (typeValue is not null)
+        {
+            if (!typeValue.Equals("process", StringComparison.OrdinalIgnoreCase) &&
+                !typeValue.Equals("object", StringComparison.OrdinalIgnoreCase))
             {
-                name = args[++i];
-                continue;
+                error = "--type supports only process|object";
+                return false;
             }
 
-            if (args[i] == "--name-contains" && i + 1 < args.Length)
+            type = typeValue;
+        }
+
+        var errorsSinceValue = parsed.Value("--has-errors-since");
+        if (errorsSinceValue is not null)
+        {
+            if (!DateTimeOffset.TryParse(errorsSinceValue, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var dt))
             {
-                name = args[++i];
-                nameContains = true;
-                continue;
+                error = "invalid --has-errors-since datetime";
+                return false;
             }
 
-            if (args[i] == "--type" && i + 1 < args.Length)
-            {
-                type = args[++i];
-                if (!type.Equals("process", StringComparison.OrdinalIgnoreCase) &&
-                    !type.Equals("object", StringComparison.OrdinalIgnoreCase))
-                {
-                    error = "--type supports only process|object";
-                    return false;
-                }
-                continue;
-            }
-
-            if (args[i] == "--has-errors-since" && i + 1 < args.Length)
-            {
-                if (!DateTimeOffset.TryParse(args[++i], System.Globalization.CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.AssumeUniversal, out var dt))
-                {
-                    error = "invalid --has-errors-since datetime";
-                    return false;
-                }
-                hasErrorsSince = dt.ToUniversalTime();
-                continue;
-            }
+            hasErrorsSince = dt.ToUniversalTime();
         }
 
         return true;
