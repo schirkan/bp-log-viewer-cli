@@ -38,6 +38,23 @@ All commands emit **jsonl** on stdout by default; warnings and errors go as
 jsonl on stderr. Printable Unicode characters (such as `ü`) are emitted directly
 rather than as `\uXXXX` escapes; JSON control characters remain escaped.
 
+## Session log output
+
+`session log` emits compact JSONL arrays instead of objects. The first line is
+always the column header, followed by one array per log entry in the same order:
+
+```jsonl
+["log_id","started_at","stage_name","stage_type","result_type","result_type_name","result_preview","attribute_size_bytes"]
+[18398968,"2026-10-26T08:55:25.263+00:00","SuchTab filled?",4,8,"Unknown(8)","False",0]
+```
+
+Missing values remain `null` to preserve column positions. `source_table`,
+`ended_at`, and `duration_ms` are not included. The header is also emitted for
+empty results and written into the file with `--output`; `--max-rows` and the
+`row_count` marker count only data rows. `--full-result` still controls the text
+in the `result_preview` column. Warnings remain JSON objects on stderr.
+Other commands retain their existing JSON object output.
+
 ## Command overview
 
 - `version` / `--version`

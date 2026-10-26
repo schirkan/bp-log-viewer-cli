@@ -12,7 +12,7 @@ namespace BpLogViewer.Cli.Output;
 /// </summary>
 public static class OutputFileWriter
 {
-    public static bool TryWriteJsonLines<T>(IReadOnlyList<T> rows, JsonTypeInfo<T> typeInfo, string outputArg, out string? errorCode, out string? errorMessage)
+    public static bool TryWriteJsonLines<T>(IReadOnlyList<T> rows, JsonTypeInfo<T> typeInfo, string outputArg, out string? errorCode, out string? errorMessage, string? headerJson = null)
     {
         if (!PathResolver.TryResolveOutputPath(outputArg, out var targetPath, out errorCode, out errorMessage))
         {
@@ -34,6 +34,12 @@ public static class OutputFileWriter
             using (var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.Read))
             using (var writer = new StreamWriter(fs, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
             {
+                if (headerJson is not null)
+                {
+                    writer.WriteLine(headerJson);
+                    bytes += Encoding.UTF8.GetByteCount(headerJson) + 1;
+                }
+
                 foreach (var row in rows)
                 {
                     var json = JsonSerializer.Serialize(row, typeInfo);

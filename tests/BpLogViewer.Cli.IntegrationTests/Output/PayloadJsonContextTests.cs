@@ -77,6 +77,49 @@ public class PayloadJsonContextTests
         Assert.Equal(detail, doc.RootElement.GetProperty("detail").GetString());
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SessionLogEntry_WritesArrayInColumnOrder(bool readable)
+    {
+        var startedAt = new DateTimeOffset(2026, 10, 26, 12, 0, 0, TimeSpan.Zero);
+        var entry = new BpLogViewer.Cli.Models.SessionLogEntry(42, "BPASessionLog_NonUnicode",
+            "Health", 1, 2, "Error", startedAt, startedAt.AddSeconds(1), 1000, "Result", 50);
+        var context = readable ? PayloadJsonContext.Readable : PayloadJsonContext.Default;
+        var json = JsonSerializer.Serialize(entry, context.SessionLogEntry);
+
+        using var doc = JsonDocument.Parse(json);
+        var row = doc.RootElement;
+        Assert.DoesNotContain("BPASessionLog_NonUnicode", json);
+        Assert.Equal(JsonValueKind.Array, row.ValueKind);
+        Assert.Equal(8, row.GetArrayLength());
+        Assert.Equal(42, row[0].GetInt64());
+        Assert.Equal(startedAt, row[1].GetDateTimeOffset());
+        Assert.Equal("Health", row[2].GetString());
+        Assert.Equal(1, row[3].GetInt32());
+        Assert.Equal(2, row[4].GetInt32());
+        Assert.Equal("Error", row[5].GetString());
+        Assert.Equal("Result", row[6].GetString());
+        Assert.Equal(50, row[7].GetInt64());
+    }
+
+    [Fact]
+    public void SessionLogEntry_NullValuesKeepTheirPositionsAndTextIsEscaped()
+    {
+        const string text = "Prüfung\n\"Pfad\" \\Test\t";
+        var entry = new BpLogViewer.Cli.Models.SessionLogEntry(1, "internal", null,
+            null, null, null, null, null, null, text, null);
+        var json = JsonSerializer.Serialize(entry, PayloadJsonContext.Readable.SessionLogEntry);
+        using var doc = JsonDocument.Parse(json);
+        var row = doc.RootElement;
+        Assert.Equal(8, row.GetArrayLength());
+        foreach (var index in new[] { 1, 2, 3, 4, 5, 7 })
+            Assert.Equal(JsonValueKind.Null, row[index].ValueKind);
+        Assert.Equal(text, row[6].GetString());
+        Assert.Contains("Prüfung", json);
+        Assert.DoesNotContain('\n', json);
+    }
+
     [Fact]
     public void Context_IsExposed()
     {

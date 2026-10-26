@@ -87,17 +87,20 @@ internal static class CommandHost
     /// Schreibt Rows als jsonl: bei <c>--output</c> in Datei + Marker auf stdout,
     /// sonst zeilenweise nach stdout. Returnt den Exit-Code (0/2/6).
     /// </summary>
-    public static int Emit<T>(IReadOnlyList<T> rows, JsonTypeInfo<T> typeInfo, FilterSet filters, bool wasTruncated)
+    public static int Emit<T>(IReadOnlyList<T> rows, JsonTypeInfo<T> typeInfo, FilterSet filters, bool wasTruncated, string? headerJson = null)
     {
         if (!string.IsNullOrWhiteSpace(filters.Output))
         {
-            if (!OutputFileWriter.TryWriteJsonLines(rows, typeInfo, filters.Output, out var code, out var message))
+            if (!OutputFileWriter.TryWriteJsonLines(rows, typeInfo, filters.Output, out var code, out var message, headerJson))
             {
                 ErrorWriter.WriteErrorAsync(code ?? "output_write_failed", message ?? "failed to write output file", 6).GetAwaiter().GetResult();
                 return 6;
             }
             return wasTruncated ? 2 : 0;
         }
+
+        if (headerJson is not null)
+            Console.WriteLine(headerJson);
 
         foreach (var row in rows)
         {

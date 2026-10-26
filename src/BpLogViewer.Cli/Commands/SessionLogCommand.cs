@@ -72,7 +72,9 @@ public static class SessionLogCommand
             if (string.IsNullOrEmpty(activeTable))
             {
                 ErrorWriter.WriteWarningAsync("no_log_entries", query.SessionNumber.ToString(System.Globalization.CultureInfo.InvariantCulture)).GetAwaiter().GetResult();
-                return 0;
+                return CommandHost.Emit(Array.Empty<BpLogViewer.Cli.Models.SessionLogEntry>(),
+                    PayloadJsonContext.Readable.SessionLogEntry, filters, wasTruncated: false,
+                    headerJson: SessionLogEntryJsonConverter.HeaderJson);
             }
 
             var resultTypeNames = LoadResultTypeNames(settings);
@@ -89,7 +91,8 @@ public static class SessionLogCommand
                 resultTypeNames: resultTypeNames);
 
             var truncated = CommandHost.Truncate(rows, effectiveMax);
-            return CommandHost.Emit(rows, PayloadJsonContext.Readable.SessionLogEntry, filters, truncated);
+            return CommandHost.Emit(rows, PayloadJsonContext.Readable.SessionLogEntry, filters, truncated,
+                headerJson: SessionLogEntryJsonConverter.HeaderJson);
         }
         catch (Exception ex)
         {

@@ -141,6 +141,48 @@ public class OutputFileWriterTests : IDisposable
         Assert.DoesNotContain("old", content);
     }
 
+    [Theory]
+    [InlineData(0, false)]
+    [InlineData(1, false)]
+    [InlineData(1, true)]
+    public void SessionLogOutput_HeaderOnStdoutAndInFile_CountsOnlyDataRows(int count, bool truncated)
+    {
+        var rows = Enumerable.Range(0, count)
+            .Select(i => new SessionLogEntry(i + 1, "internal", null, null, null, null,
+                null, null, null, null, null)).ToArray();
+        var origOut = Console.Out;
+        var capture = new StringWriter();
+        Console.SetOut(capture);
+        try
+        {
+            var rc = BpLogViewer.Cli.Commands.CommandHost.Emit(rows,
+                PayloadJsonContext.Readable.SessionLogEntry, BpLogViewer.Cli.Filters.Filters.Empty,
+                truncated, SessionLogEntryJsonConverter.HeaderJson);
+            Assert.Equal(truncated ? 2 : 0, rc);
+            var stdout = capture.ToString();
+            var lines = stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+            Assert.Equal(count + 1, lines.Length);
+            Assert.Equal(SessionLogEntryJsonConverter.HeaderJson, lines[0].TrimEnd('\r'));
+            if (count > 0)
+                Assert.Equal("[1,null,null,null,null,null,null,null]", lines[1].TrimEnd('\r'));
+
+            capture.GetStringBuilder().Clear();
+            rc = BpLogViewer.Cli.Commands.CommandHost.Emit(rows,
+                PayloadJsonContext.Readable.SessionLogEntry,
+                BpLogViewer.Cli.Filters.Filters.Empty with { Output = "log.jsonl" },
+                truncated, SessionLogEntryJsonConverter.HeaderJson);
+            Assert.Equal(truncated ? 2 : 0, rc);
+            Assert.Equal(stdout, File.ReadAllText(Path.Combine(_tmpDir, "log.jsonl")));
+            Assert.False(File.Exists(Path.Combine(_tmpDir, "log.jsonl.tmp")));
+            using var marker = JsonDocument.Parse(capture.ToString());
+            Assert.Equal(count, marker.RootElement.GetProperty("row_count").GetInt32());
+        }
+        finally
+        {
+            Console.SetOut(origOut);
+        }
+    }
+
     [Fact]
     public void TryWriteJsonLines_Traversal_Blocked()
     {
