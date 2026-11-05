@@ -125,7 +125,7 @@ Artifact: `out/win-x64/bp-log-viewer.exe`
 Workflow: `.github/workflows/release-single-exe.yml`
 
 Trigger:
-- Tag push `v*` (e.g. `v0.1.0`)
+- Tag push `v*`
 - optional manual via `workflow_dispatch`
 
 Steps:
