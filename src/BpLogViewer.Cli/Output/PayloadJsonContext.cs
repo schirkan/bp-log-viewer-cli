@@ -27,6 +27,8 @@ namespace BpLogViewer.Cli.Output;
 [JsonSerializable(typeof(SessionErrorAggregate))]
 [JsonSerializable(typeof(ResourceInfo))]
 [JsonSerializable(typeof(ProcessInfo))]
+[JsonSerializable(typeof(EnvironmentVarInfo))]
+[JsonSerializable(typeof(EnvironmentVarDependencyInfo))]
 [JsonSerializable(typeof(QueueInfo))]
 [JsonSerializable(typeof(QueueItemInfo))]
 [JsonSerializable(typeof(AuditEventInfo))]

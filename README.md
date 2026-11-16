@@ -64,6 +64,9 @@ Other commands retain their existing JSON object output.
 - `process list`
 - `queue list|items`
 - `audit list`
+- `environment vars|dependencies`
+
+`environment vars` lists the Environment Variables from `BPAEnvironmentVar`; `environment dependencies` shows which process uses which variable (`BPAProcessEnvironmentVarDependency` joined to `BPAProcess`).
 
 Global options (excerpt):
 - `--connection-string`

@@ -23,6 +23,7 @@
 - Code review pass 1-4 completed; all findings fixed.
 - The CLI option vocabulary lives in one place (`src/BpLogViewer.Cli/Configuration/OptionRegistry.cs`); the dispatcher, the filter parser and every command read it from there. New options must be declared there only.
 - `session log` emits compact JSONL arrays (header line with the column names, then one array per entry).
+- `environment vars` and `environment dependencies` expose the Environment Variables and their process assignment; the option vocabulary lives in `Configuration/OptionRegistry.cs`.
 - Release workflow (`.github/workflows/release-single-exe.yml`) ships a framework-dependent single-file EXE + SHA256 as GitHub Release assets on tag `v*`.
 - Latest release: see [GitHub Releases](https://github.com/schirkan/bp-log-viewer-cli/releases).
 

@@ -53,6 +53,7 @@ public static class Program
                 "process" => DispatchProcess(subArgs, filters),
                 "queue" => DispatchQueue(subArgs, filters),
                 "audit" => DispatchAudit(subArgs, filters),
+                "environment" => DispatchEnvironment(subArgs, filters),
                 _ => UnknownCommand(subCommand)
             };
         }
@@ -115,6 +116,7 @@ public static class Program
         Console.Error.WriteLine("  process list      List processes");
         Console.Error.WriteLine("  queue ...         Work queues + items");
         Console.Error.WriteLine("  audit list        Audit events");
+        Console.Error.WriteLine("  environment ...   Environment variables + process dependencies");
         Console.Error.WriteLine("");
         Console.Error.WriteLine("Global options:");
         Console.Error.WriteLine("  --connection-string <cs>  --output <path>  --format jsonl|table");
@@ -191,6 +193,22 @@ public static class Program
             "list" => QueueListCommand.Execute(subArgs.Skip(1).ToArray(), filters),
             "items" => QueueItemsCommand.Execute(subArgs.Skip(1).ToArray(), filters),
             _ => UnknownCommand($"queue {subArgs[0]}")
+        };
+    }
+
+    private static int DispatchEnvironment(string[] subArgs, FilterSet filters)
+    {
+        if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
+        {
+            Console.Error.WriteLine("Usage: bp-log-viewer environment <vars|dependencies> [options]");
+            return 0;
+        }
+
+        return subArgs[0] switch
+        {
+            "vars" => EnvironmentVarsCommand.Execute(subArgs.Skip(1).ToArray(), filters),
+            "dependencies" => EnvironmentDependenciesCommand.Execute(subArgs.Skip(1).ToArray(), filters),
+            _ => UnknownCommand($"environment {subArgs[0]}")
         };
     }
 

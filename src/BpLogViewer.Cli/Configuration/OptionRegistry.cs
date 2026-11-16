@@ -94,6 +94,16 @@ public static class OptionRegistry
             ["--include-xml"] = OptionArity.Flag,
             ["--full-comments"] = OptionArity.Flag,
         },
+        ["environment vars"] = new(StringComparer.Ordinal)
+        {
+            ["--name"] = OptionArity.Value,
+            ["--name-contains"] = OptionArity.Value,
+        },
+        ["environment dependencies"] = new(StringComparer.Ordinal)
+        {
+            ["--process-name"] = OptionArity.Value,
+            ["--variable"] = OptionArity.Value,
+        },
     };
 
     private static readonly IReadOnlyDictionary<string, OptionArity> EmptyOptions =
