@@ -37,6 +37,16 @@
 - **Default branch:** `main`
 - **Release workflow:** `.github/workflows/release-single-exe.yml` (tag `v*` → single EXE + ZIP + SHA256 + Release assets)
 
+## CI/CD
+
+- **Platform:** GitHub Actions.
+- **Workflow:** `.github/workflows/release-single-exe.yml`.
+- **Trigger:** tag push `v*`; optional `workflow_dispatch`.
+- **Build:** .NET 8 framework-dependent, untrimmed, single-file Windows x64 CLI.
+- **Artifacts:** executable and configuration in a ZIP, plus ZIP SHA256 checksum, attached to GitHub Releases.
+- **Last verified run:** 16.11.2026, release `v0.5.0`, source commit `5cd0830`, [run 43959908732](https://github.com/schirkan/bp-log-viewer-cli/actions/runs/43959908732), success.
+- **Artifact verification:** downloaded ZIP checksum matched; its executable passed all 11 environment acceptance checks against the real BP database. The source test suite passed 241/241 tests in three consecutive runs.
+
 ## Architecture highlights
 
 | Aspect | Choice |
