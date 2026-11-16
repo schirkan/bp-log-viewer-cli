@@ -41,6 +41,7 @@ unverändert ausgegeben. Secrets gehören nach Blue-Prism-Best practice in
 4. Filter `environment vars` (alle optional, Muster wie `process list`):
    - `--name <name>` — Präfix-Match (`name%`)
    - `--name-contains <text>` — Contains-Match (`%text%`)
+   - Bei Kombination bestimmt die zuletzt angegebene Option Wert und Match-Modus.
 5. Filter `environment dependencies` (alle optional):
    - `--process-name <name>` — Präfix-Match auf den Prozessnamen
    - `--variable <name>` — Präfix-Match auf `refVariableName`
@@ -62,7 +63,8 @@ unverändert ausgegeben. Secrets gehören nach Blue-Prism-Best practice in
 - Parametrisierte Queries (CWE-89-Schutz); `value` ist ein reserviertes Wort und
   wird als `[value]` quotiert.
 - `LEFT JOIN` auf `BPAProcess`: eine Dependency ohne passenden Prozess bleibt
-  sichtbar (`process_name` leer), statt zu verschwinden.
+  sichtbar (`process_name` wird weggelassen), statt zu verschwinden.
+- JSONL auf stdout/stderr ist UTF-8 ohne BOM, auch bei Pipe-Umleitung.
 - Antwort < 1 s für 10.000 Zeilen.
 
 ## Akzeptanzkriterien
@@ -73,12 +75,13 @@ unverändert ausgegeben. Secrets gehören nach Blue-Prism-Best practice in
    `--name-contains X` liefert alle mit `X` im Namen.
 3. `bp-log-viewer environment dependencies` liefert je Abhängigkeit `id`,
    `process_id`, `process_name` und `variable_name`.
-4. Der Prozessname wird per Join aufgelöst; ohne Treffer bleibt `process_name` leer.
+4. Der Prozessname wird per Join aufgelöst; ohne Treffer wird `process_name` weggelassen.
 5. `--process-name` und `--variable` filtern jeweils auf Präfix.
 6. `--output` schreibt dieselben Datensätze in die Datei; `row_count` zählt nur
    Datenzeilen.
-7. Fehlender Optionswert → `command_invalid`, Exit 11.
-8. Datenbankfehler → `db_error`, Exit 4.
+7. Fehlender Optionswert → `filter_invalid` im CLI-Dispatcher, `command_invalid`
+   beim direkten Command-Aufruf; jeweils Exit 11.
+8. Datenbankfehler → `db_error`, Exit 5 (wie `CommandHost.WriteDbError`).
 
 ## Out of Scope
 
@@ -101,5 +104,6 @@ unverändert ausgegeben. Secrets gehören nach Blue-Prism-Best practice in
 
 | Datum | Status | Änderung |
 |:------|:-------|:---------|
-| 2026-11-16 | ✅< Entwurf | Initial angelegt (Martin-Vorgabe: `BPAEnvironmentVar` + `BPAProcessEnvironmentVarDependency` einbinden, keine Redaction) |
-| 2026-11-16 | ✅< Entwurf | Implementiert: `environment vars` + `environment dependencies`, Ausgabe als jsonl-Objekte |
+| 2026-11-16 | Entwurf | Initial angelegt (Martin-Vorgabe: `BPAEnvironmentVar` + `BPAProcessEnvironmentVarDependency` einbinden, keine Redaction) |
+| 2026-11-16 | Fertig | Implementiert: `environment vars` + `environment dependencies`, Ausgabe als jsonl-Objekte |
+| 2026-11-16 | Validierung | Testvariablen per offizieller BP-CLI `/setev` angelegt; UTF-8-Umleitung, Filter-Reihenfolge und dokumentierte Fehlercodes geprüft. |

@@ -5,6 +5,23 @@ namespace BpLogViewer.Cli.IntegrationTests.Configuration;
 
 public class CommandArgsTests
 {
+    [Theory]
+    [InlineData("--name", "--name-contains")]
+    [InlineData("--name-contains", "--name")]
+    public void LastOption_KeepsFilterModeEvenWhenValuesAreIdentical(string first, string last)
+    {
+        var result = CommandArgs.Parse(new[] { first, "Text", last, "Text" }, "environment", "vars");
+        Assert.Equal(last, result.LastOption("--name", "--name-contains"));
+        Assert.Equal("Text", result.LastValue("--name", "--name-contains"));
+    }
+
+    [Fact]
+    public void LastOption_ReturnsNullWhenNotSupplied()
+    {
+        var result = CommandArgs.Parse(Array.Empty<string>(), "environment", "vars");
+        Assert.Null(result.LastOption("--name", "--name-contains"));
+    }
+
     [Fact]
     public void CommandOption_ValueIsConsumedAndNotPositional()
     {

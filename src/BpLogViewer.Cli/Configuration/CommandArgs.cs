@@ -69,6 +69,21 @@ public sealed class CommandArgResult
 
         return null;
     }
+
+    /// <summary>The name of the last matching value option, or null.</summary>
+    public string? LastOption(params string[] options)
+    {
+        for (var i = _entries.Count - 1; i >= 0; i--)
+        {
+            foreach (var option in options)
+            {
+                if (string.Equals(_entries[i].Option, option, StringComparison.Ordinal))
+                    return _entries[i].Option;
+            }
+        }
+
+        return null;
+    }
 }
 
 /// <summary>

@@ -57,7 +57,7 @@ public static class EnvironmentVarsCommand
         // --name und --name-contains teilen sich den Namensfilter; das zuletzt
         // angegebene gewinnt.
         name = parsed.LastValue("--name", "--name-contains");
-        nameContains = parsed.Values("--name-contains").Count > 0;
+        nameContains = parsed.LastOption("--name", "--name-contains") == "--name-contains";
         return true;
     }
 }

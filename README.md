@@ -9,7 +9,7 @@ official BP CLI.
 
 ## License
 
-[MIT](LICENSE) — Copyright (c) 2026 Martin.
+[MIT](LICENSE) — Copyright (c) 2026 Martin Pietschmann.
 
 ## What this is
 
@@ -32,10 +32,13 @@ bp-log-viewer process list --has-errors-since 2026-10-01T00:00:00Z
 bp-log-viewer queue list
 bp-log-viewer queue items "MyQueue" --include-tags
 bp-log-viewer audit list --code RESSTART
+bp-log-viewer environment vars --name-contains Config
+bp-log-viewer environment dependencies --process-name "My Process"
 ```
 
 All commands emit **jsonl** on stdout by default; warnings and errors go as
-jsonl on stderr. Printable Unicode characters (such as `ü`) are emitted directly
+jsonl on stderr. Console output uses UTF-8 without a BOM, including when redirected
+to a pipe or file. Printable Unicode characters (such as `ü`) are emitted directly
 rather than as `\uXXXX` escapes; JSON control characters remain escaped.
 
 ## Session log output
@@ -67,6 +70,35 @@ Other commands retain their existing JSON object output.
 - `environment vars|dependencies`
 
 `environment vars` lists the Environment Variables from `BPAEnvironmentVar`; `environment dependencies` shows which process uses which variable (`BPAProcessEnvironmentVarDependency` joined to `BPAProcess`).
+
+## Environment variables
+
+These commands are read-only. Values are returned unchanged, with no redaction.
+Store credentials in Blue Prism's Credential Manager, not in environment variables.
+
+| Command | Filters | JSONL fields |
+|:---|:---|:---|
+| `environment vars` | `--name <prefix>`, `--name-contains <text>` | `id` (GUID), `name`, `datatype`, `value`, `description` |
+| `environment dependencies` | `--process-name <prefix>`, `--variable <prefix>` | `id` (integer), `process_id` (GUID), `process_name`, `variable_name` |
+
+For `vars`, the last `--name` or `--name-contains` option determines both the value
+and the matching mode. Dependencies use a LEFT JOIN: a reference to a missing
+process remains visible, with `process_name` omitted. Variables are sorted by name;
+dependencies by process name and then variable name. Null fields are omitted.
+Empty results emit no data and return exit 0.
+
+```bash
+bp-log-viewer environment vars --name Config --max-rows 50
+bp-log-viewer environment vars --name-contains Path --output environment-vars.jsonl
+bp-log-viewer environment dependencies --process-name "My Process" --variable Config
+```
+
+The default limit is 1,000 rows; the hard ceiling is 100,000. With `--output` and
+no explicit `--max-rows`, the hard ceiling is used and stdout contains a file marker
+with `row_count`. Truncation emits `output_truncated` and exit 2. Missing option
+values produce `filter_invalid` and exit 11 at the CLI dispatcher
+(`command_invalid` when calling a command directly); database errors produce
+`db_error` and exit 5. Both commands emit JSONL objects, not table output.
 
 Global options (excerpt):
 - `--connection-string`

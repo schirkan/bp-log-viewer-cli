@@ -10,6 +10,23 @@ public class EnvironmentCommandTests : CommandSmokeTestBase
 {
     public EnvironmentCommandTests(BpLogViewerEnvironment env) : base(env) { }
 
+    [Theory]
+    [InlineData("--name-contains", "--name", false)]
+    [InlineData("--name", "--name-contains", true)]
+    public void Vars_LastNameOptionControlsMatching(string first, string last, bool contains)
+    {
+        var (rc, stdout, stderr) = RunCommand(EnvironmentVarsCommand.Execute,
+            new[] { first, "Text", last, "Text" }, WithConnection(FilterSet.Empty));
+        Assert.True(rc == 0, $"rc={rc} stderr={stderr}");
+        foreach (var line in stdout.Split('\n', StringSplitOptions.RemoveEmptyEntries))
+        {
+            using var doc = JsonDocument.Parse(line);
+            var name = doc.RootElement.GetProperty("name").GetString()!;
+            Assert.True(contains ? name.Contains("Text", StringComparison.OrdinalIgnoreCase)
+                : name.StartsWith("Text", StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
     [Fact]
     public void Vars_NoArgs_Completes()
     {
@@ -105,7 +122,9 @@ public class EnvironmentCommandTests : CommandSmokeTestBase
             var row = doc.RootElement;
             Assert.Equal(JsonValueKind.Number, row.GetProperty("id").ValueKind);
             Assert.Equal(JsonValueKind.String, row.GetProperty("variable_name").ValueKind);
-            Assert.True(row.TryGetProperty("process_name", out _));
+            // A missing process in the LEFT JOIN omits the nullable process_name.
+            if (row.TryGetProperty("process_name", out var processName))
+                Assert.Equal(JsonValueKind.String, processName.ValueKind);
             Assert.True(row.TryGetProperty("process_id", out _));
         }
     }

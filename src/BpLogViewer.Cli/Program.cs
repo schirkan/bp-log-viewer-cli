@@ -21,6 +21,8 @@ public static class Program
     /// <summary>Process entry point. Returns the CLI exit code.</summary>
     public static int Main(string[] args)
     {
+        // Keep redirected JSONL output independent of the Windows code page.
+        Console.OutputEncoding = new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: false);
         try
         {
             if (args.Length == 0)
@@ -201,6 +203,9 @@ public static class Program
         if (subArgs.Length == 0 || subArgs[0] is "help" or "--help" or "-h")
         {
             Console.Error.WriteLine("Usage: bp-log-viewer environment <vars|dependencies> [options]");
+            Console.Error.WriteLine("  vars          --name <prefix> | --name-contains <text> (last option wins)");
+            Console.Error.WriteLine("  dependencies  --process-name <prefix>  --variable <prefix>");
+            Console.Error.WriteLine("  Both commands emit JSONL objects; --max-rows and --output are supported.");
             return 0;
         }
 

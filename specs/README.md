@@ -55,7 +55,7 @@
 | F-014 | Self-Test & Diagnostics | ✔️ Fertig | Mittel | [spec](feature-F-014-self-test.md) | F-001, architecture § 9 |
 | F-015 | Environment Variables | ✔️ Fertig | Mittel | [spec](feature-F-015-environment-variables.md) | F-001, F-011, F-012, F-013 |
 
-**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierung ist komplett auf **✔️** abgeschlossen (F-001 bis F-014).
+**Zusammenfassung:** Spec-Abnahme ist komplett ✅. Implementierung ist komplett auf **✔️** abgeschlossen (F-001 bis F-015).
 
 ## Code-Review-Status (2026-10-13)
 

@@ -24,6 +24,8 @@
 - The CLI option vocabulary lives in one place (`src/BpLogViewer.Cli/Configuration/OptionRegistry.cs`); the dispatcher, the filter parser and every command read it from there. New options must be declared there only.
 - `session log` emits compact JSONL arrays (header line with the column names, then one array per entry).
 - `environment vars` and `environment dependencies` expose the Environment Variables and their process assignment; the option vocabulary lives in `Configuration/OptionRegistry.cs`.
+- Environment validation: six variables created with the official Blue Prism CLI `/setev`; value/description round-trip (Unicode, quotes, backslashes and tabs), filters, truncation, file export and the existing process dependency verified. Integration suite: 241 tests passed.
+- Console output is UTF-8 without BOM, including redirected JSONL. For `environment vars`, the last name-filter option determines both the filter value and prefix/contains mode.
 - Release workflow (`.github/workflows/release-single-exe.yml`) ships a framework-dependent single-file EXE + SHA256 as GitHub Release assets on tag `v*`.
 - Latest release: see [GitHub Releases](https://github.com/schirkan/bp-log-viewer-cli/releases).
 
